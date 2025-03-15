@@ -32,9 +32,11 @@ You can obtain the source code in two ways:
 #### Cloning the Repository (Recommended for Development)
 If you want to contribute or track changes, clone the repository using Git:
 ```bash
-git clone https://github.com/coding4Acause/2d_UnteadyVortexPanel.git
-cd 2d_UnsteadyVortexPanel
+git clone https://github.com/coding4Acause/2d_UnsteadyVortexPanel.git 
+cd 2d_UnsteadyVortexPanel  
 ```
+<!-- cd 2d_UnsteadyVortexPanel is the name of the local(in the host system) directory for the project -->
+
 #### Downloading as a ZIP (For Direct Usage)
 
 If you only need the code without version control:
@@ -44,4 +46,25 @@ If you only need the code without version control:
 3) Select "Download ZIP".
 4) Extract the ZIP file and navigate to the extracted folder.
 
+## Compilation
+To compile the code, ensure all .cpp and .h files are in the appropriate directories. The typical structure is:
+
+/2d_UnsteadyVortexPanel   # the name of your local repository
+- │── /src          # Contains all .cpp source files
+- │── /include      # Contains all .h header files
+- │── main.cpp      
+
+If you are using g++, compile everything together with:
+```bash 
+g++ -o vortex_solver src/*.cpp main.cpp -Iinclude -std=c++11 
+````
+If using Intel compilers:
+```bash 
+icpx -o vortex_solver src/*.cpp main.cpp -Iinclude -std=c++11 
+````
+
 ## Documentation
+
+## Authors
+- Dr. Nipun Arora
+- Rohit Chowdhury 
