@@ -6,7 +6,8 @@ This project implements a 2D unsteady vortex panel method to study the aerodynam
 The essence of this approach lies in transforming a partial differential equation (PDE) into a system of linear algebraic equations, reducing the problem to a linear algebra problem. The real geometry is discretized into a series of flat panels, and a piecewise linearly varying vortex panel method is used to simulate the flow around the airfoil. At each time instant, a constant-strength vortex panel is shed from the trailing edge to satisfy *Kelvin's Circulation Theorem*, ensuring the correct representation of unsteady effects.
 
 This solver is implemented in C++ and utilizes the **Eigen library** for efficient matrix operations. The code computes unsteady aerodynamic forces acting on an airfoil undergoing prescribed motion. A detailed document explaining the numerical framework will be provided separately.
-[wake_pitch_plunge.pdf](https://github.com/user-attachments/files/19283824/wake_pitch_plunge.pdf)
+![wake_pitch_plunge-1](https://github.com/user-attachments/assets/bdb9914f-656a-4ffa-aad5-64964822ef1f)
+
 
 ## Installation
 
