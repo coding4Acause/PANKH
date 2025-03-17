@@ -49,22 +49,38 @@ If you only need the code without version control:
 ## Compilation
 To compile the code, ensure all .cpp and .h files are in the appropriate directories. The typical structure is:
 
-/2d_UnsteadyVortexPanel   # the name of your local repository
+2d_UnsteadyVortexPanel   # the name of the local repository
 - │── /src          # Contains all .cpp source files
 - │── /include      # Contains all .h header files
-- │── main.cpp      
+- │── main.cpp     
+- │── README.md        
+- │── LICENSE 
+- │── output_files    
 
 If you are using g++, compile everything together with:
 ```bash 
-g++ -o vortex_solver src/*.cpp main.cpp -Iinclude -std=c++11 
+g++ -o 2d_uvpm_solver src/*.cpp main.cpp -Iinclude -std=c++11 
 ````
 If using Intel compilers:
 ```bash 
-icpx -o vortex_solver src/*.cpp main.cpp -Iinclude -std=c++11 
-````
+icpx -o 2d_uvpm_solver src/*.cpp main.cpp -Iinclude -std=c++11 
+```
 
-## Documentation
+## Usage
+- Before compiling the code, modify the input parameters in `constants.cpp` as needed.
+- Ensure that the required output directories exist before running the code. Refer to `SETUP.md` for details on directory structure.  
+- After compiling the code, run the solver using:
+```bash
+./ 2d_uvpm_solver
+```
+## Documentation  
+For a detailed explanation of the solver, equations, and implementation, refer to the full documentation:  
+[Read the Documentation](docs/main_documentation.pdf)
 
-## Authors
+## License
+This project is licensed under the terms of the MIT License. See [License](https://github.com/coding4Acause/2d_UnsteadyVortexPanel/blob/main/LICENSE) for details.
+
+## Contributers
 - Dr. Nipun Arora
 - Rohit Chowdhury 
+
