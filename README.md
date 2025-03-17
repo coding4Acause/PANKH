@@ -12,32 +12,48 @@ This solver is implemented in C++ and utilizes the **Eigen library** for efficie
 ### Prerequisites
 Before compiling and running the code, ensure the installation of the following dependencies:
 
-**Compiler support**:- C++ compiler is needed that supports C++ 11 or later. Some recommended options:
 
-  - GCC (GNU Compiler Collection)
-  - Intel C++ Compiler (ICPC/ICX/IPCX)
+<details>
+  <summary> Install a C++ Compiler</summary>
+  
+  - You need a compiler that supports C++11 or later.
+  - Recommended options:
+    - GCC (GNU Compiler Collection)
+    - Intel C++ Compiler (ICPC/ICX/IPCX)
+  - To install GCC on Ubuntu:
+    ```bash
+    sudo apt install g++
+    ```
+</details>
 
- **Eigen Library** (Required for matrix operations):
-  - Install via package manager:
+<details>
+  <summary> Install Eigen Library(Required for matrix operations:)</summary>
+  
+- Install via package manager:
     ```bash
     sudo apt install libeigen3-dev  # Ubuntu
     ```
   - Or download manually from [Eigen's official website](https://eigen.tuxfamily.org/).
   - Install, compile and run a code which uses Eigen Library ==> [Getting started](https://eigen.tuxfamily.org/dox/GettingStarted.html)
+</details>
 
+  
 ### Getting the Source Code
 
 You can obtain the source code in two ways:
+<details>
+  <summary>  Cloning the Repository (Recommended for Development)</summary>
 
-#### Cloning the Repository (Recommended for Development)
 If you want to contribute or track changes, clone the repository using Git:
 ```bash
 git clone https://github.com/coding4Acause/2d_UnsteadyVortexPanel.git 
 cd 2d_UnsteadyVortexPanel  
 ```
 <!-- cd 2d_UnsteadyVortexPanel is the name of the local(in the host system) directory for the project -->
+</details>
 
-#### Downloading as a ZIP (For Direct Usage)
+<details>
+ <summary> Downloading as a ZIP (For Direct Usage) </summary>
 
 If you only need the code without version control:
 
@@ -45,9 +61,12 @@ If you only need the code without version control:
 2) Click the "Code" button.
 3) Select "Download ZIP".
 4) Extract the ZIP file and navigate to the extracted folder.
+</details>
 
 ## Compilation
-To compile the code, ensure all .cpp and .h files are in the appropriate directories. The typical structure is:
+To compile the code, ensure all .cpp and .h files are in the appropriate directories.
+<details>
+<summary> The typical structure is: </summary>
 
 2d_UnsteadyVortexPanel   # the name of the local repository
 - │── /src          # Contains all .cpp source files
@@ -56,15 +75,24 @@ To compile the code, ensure all .cpp and .h files are in the appropriate directo
 - │── README.md        
 - │── LICENSE 
 - │── output_files    
+</details>
 
+<details>
+<summary> GCC compilers </summary>
 If you are using g++, compile everything together with:
+
 ```bash 
 g++ -o 2d_uvpm_solver src/*.cpp main.cpp -Iinclude -std=c++11 
 ````
-If using Intel compilers:
+</details>
+
+<details>
+<summary> Intel compilers </summary>
+
 ```bash 
 icpx -o 2d_uvpm_solver src/*.cpp main.cpp -Iinclude -std=c++11 
 ```
+</details>
 
 ## Usage
 - Before compiling the code, modify the input parameters in `constants.cpp` as needed.
