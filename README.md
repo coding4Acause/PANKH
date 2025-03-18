@@ -9,7 +9,6 @@ This solver is implemented in C++ and utilizes the **Eigen library** for efficie
 ![unsteady_model_at_tk-1](https://github.com/user-attachments/assets/b764fcf8-4402-4e61-bb78-6558aa271894)
 
 
-
 ## Installation
 
 ### Prerequisites
@@ -77,7 +76,7 @@ To compile the code, ensure all .cpp and .h files are in the appropriate directo
 - │── main.cpp     
 - │── README.md        
 - │── LICENSE 
-- │── output_files    
+- │── /output_files    
 </details>
 
 <details>
@@ -111,7 +110,14 @@ For a detailed explanation of the solver, equations, and implementation, refer t
 ## License
 This project is licensed under the terms of the MIT License. See [License](https://github.com/coding4Acause/2d_UnsteadyVortexPanel/blob/main/LICENSE) for details.
 
+## Future Work
+
+**Incorporating the viscous effects** -  A hybrid approach can be implemented by first solving the inviscid potential flow to obtain velocity and pressure distributions. These will serve as inputs for a 2D boundary layer solver to estimate local wall friction and boundary layer thickness. If displacement thickness effect is sought, the airfoil geometry is iteratively updated by adjusting the body panels based on local boundary layer displacement, and the potential flow solution is recomputed until convergence is achieved.
+
+## FAQ
+ 
+
 ## Contributers
-- Dr. Nipun Arora
+- Nipun Arora             [webpag](https://sites.google.com/view/nipun-arora/home)
 - Rohit Chowdhury 
 
