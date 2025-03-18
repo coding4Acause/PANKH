@@ -108,10 +108,11 @@ icpx -o 2d_uvpm_solver src/*.cpp main.cpp -Iinclude -std=c++11
 For a detailed explanation of the solver, equations, and implementation, refer to the full documentation:  
 [Read the Documentation](docs/main_documentation.pdf)
 
+
 ## License
 This project is licensed under the terms of the MIT License. See [License](https://github.com/coding4Acause/2d_UnsteadyVortexPanel/blob/main/LICENSE) for details.
 
 ## Contributers
-- Dr. Nipun Arora
+- Dr. Nipun Arora [![download](https://github.com/user-attachments/assets/a6edc9b9-f8d2-4933-b7be-2eceb2f4e2b1)](https://sites.google.com/view/nipun-arora/home)
 - Rohit Chowdhury 
 
