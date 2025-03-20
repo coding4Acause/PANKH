@@ -1,6 +1,6 @@
 #include "MotionParameters.h"
 
-/* h_instantaneous function returns the position of the origin of the body fixed frame with respect to an inertial frame of reference because of the heaving/plunging motion */
+
 VectorXd h_instantaneous(double t, double omega)
 {
     VectorXd plunge(3);
@@ -19,14 +19,14 @@ VectorXd h_dot_instantaneous(double t, double omega)
     plunge_vel(2) = 0.0;
     return (plunge_vel);
 }
-/* function which returns the alpha at a corresponding time */
+
 double alpha_instantaneous(double t)
 {
     double alpha;
     alpha = alpha0 + alpha1 * sin(omega * t + phi_alpha);
     return alpha;
 }
-/* function which returns the angular velocity at a corresponding time */
+
 double alpha_dot_instantaneous(double t)
 {
     double alpha_dot;

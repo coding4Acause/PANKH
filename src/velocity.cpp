@@ -1,6 +1,7 @@
 #include "velocity.h"
 #include "constants.h"
 
+// THIS FUNCTION CALCULATES THE VELOCITY INDUCED BY THE BOUND VORTICES(AIRFOIL VORTEX PANELS AT ANY RANDOM POINT IN THE FLOWFIELD)
 VectorXd velocity_bound_vortices(VectorXd &x_pp, VectorXd &y_pp, double x, double y, VectorXd G_bound)
 {
     VectorXd VEL(2);
@@ -18,7 +19,7 @@ VectorXd velocity_bound_vortices(VectorXd &x_pp, VectorXd &y_pp, double x, doubl
 
     return VEL;
 }
-
+// THIS FUNCTION CALCULATES THE VELOCITY INDUCED AT (des_point_x,des_point_y) BY A  POINT VORTEX OF STRENGTH GAMMA LOCATED AT (vor_point_x,vor_point_y)
 VectorXd velocity_induced_due_to_discrete_vortex(double gamma, double vor_point_x, double vor_point_y, double des_point_x, double des_point_y)
 {
     MatrixXd I(2, 2);
