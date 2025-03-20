@@ -1,4 +1,4 @@
-# 2D Unsteady Vortex Panel method
+# 2D Unsteady Vortex Panel Method
 
 ## Description
 This project implements a 2D unsteady vortex panel method to study the aerodynamics of flapping foils. It is a **low-fidelity solver** that employs the **Laplace equation** to compute the velocity distribution in the flow field while enforcing the *Neumann boundary condition* to satisfy the *no-penetration (zero normal flux)* condition on the airfoil surface. The unsteady form of Bernoulli equation is applied to calculate the pressure difference across the airfoil, enabling the computation of aerodynamic loads. 
@@ -110,14 +110,13 @@ For a detailed explanation of the solver, equations, and implementation, refer t
 ## License
 This project is licensed under the terms of the MIT License. See [License](https://github.com/coding4Acause/2d_UnsteadyVortexPanel/blob/main/LICENSE) for details.
 
-## Future Work
+# Future Work
 
 **Incorporating the viscous effects** -  A hybrid approach can be implemented by first solving the inviscid potential flow to obtain velocity and pressure distributions. These will serve as inputs for a 2D boundary layer solver to estimate local wall friction and boundary layer thickness. If displacement thickness effect is sought, the airfoil geometry is iteratively updated by adjusting the body panels based on local boundary layer displacement, and the potential flow solution is recomputed until convergence is achieved.
 
 ## FAQ
- 
 
 ## Contributers
-- Nipun Arora             [webpag](https://sites.google.com/view/nipun-arora/home)
+- [Nipun Arora](https://sites.google.com/view/nipun-arora/home)
 - Rohit Chowdhury 
 
