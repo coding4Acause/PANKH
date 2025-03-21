@@ -1,5 +1,5 @@
 ---
-title: 'An unsteady Vortex Panel Method for Flapping Foils
+title: 'An unsteady Vortex Panel Method for Flapping Foils'
 tags:
   - Unsteady aerodynamics
   - Potential Flows
