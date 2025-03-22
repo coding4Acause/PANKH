@@ -1,0 +1,30 @@
+double c = 0.1;
+double rho = 998.2;                        // Density of water
+double mu = 1.0016e-3;                     // Viscosity of water
+double Re = 40000;                         // Reynolds number
+double Qinf = Re * mu / (rho * c);         // Flow speed or magnitude of the freestream velocity
+double dynpress = 0.5 * rho * Qinf * Qinf; // Dynamic pressure
+
+double b = c / 2;        // Calculate half-chord
+double xf = c / 3;       // Position of pitch axis
+double a = (xf - b) / b; // Non-dimensional pitch axis position
+/*In this problem we are rotating the airfoil by instantaneous angle of attack keeping the freestream direction parallel to X dirn.[INERTIAL FRAME]*/
+double Uinf = Qinf;
+double Vinf = 0.0;
+Vector2d freestream(Uinf, Vinf);
+
+// Motion parameters
+
+double k=1.5;                                              // Reduced frequency
+double omega = (2.0 * k * Qinf) / c; // [rad/sec]           // Frequency of oscillation         
+double T=2.0*pi/omega;                                      // Time Period of oscillation
+double h1 = 0.25 * c;                                       // Plunge amplitude
+double alpha1 = 15.0 * pi / 180.0 - atan2(2.0 * k * h1, c); // Pitch amplitude
+double h0 = 0.0;                                            // Mean plunge
+double alpha0 = 0.0 * pi / 180.0;                           // Mean pitch
+double phi_h = 0.0;                                         // Plunge phase
+double phi_alpha = (90.0 + phi_h) * pi / 180.0;             // Pitch phase
+
+double h = h1 * sin(omega * t + phi_h); // plunge kinematics
+
+double alpha = alpha0 + alpha1 * sin(omega * t + phi_alpha); // pitch kinematics
