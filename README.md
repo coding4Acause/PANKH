@@ -8,6 +8,19 @@ The essence of this approach lies in transforming a partial differential equatio
 This solver is implemented in C++ and utilizes the **Eigen library** for efficient matrix operations. The code computes unsteady aerodynamic forces acting on an airfoil undergoing prescribed motion. A detailed document explaining the numerical framework will be provided separately.
 ![unsteady_model_at_tk-1](https://github.com/user-attachments/assets/b764fcf8-4402-4e61-bb78-6558aa271894)
 
+## Features
+- **Real-time wake visualization** using Gnuplot for enhanced flow analysis.
+
+- **Live tracking** of Cl vs time plot to observe aerodynamic force variations dynamically.
+
+- Support for any NACA 4-digit series airfoil, allowing user-defined airfoil selection.
+
+- **Flexible motion simulation** — the code can be easily modified to analyze various kinematic motions
+
+- **User-controlled wake modeling** – The `constants.cpp` file allows users to choose between prescribed wake and free wake analysis.
+
+- **Flexible panel discretization** – The code supports both *even* and *odd* numbers of panels with *cosine clustering* for improved resolution near the leading and trailing edges. For details, refer to the `nodal_coordinates_initial` function in `geometry.cpp`.
+
 
 ## Installation
 
@@ -72,8 +85,7 @@ To compile the code, ensure all .cpp and .h files are in the appropriate directo
 
 2d_UnsteadyVortexPanel   # the name of the local repository
 - │── /src          # Contains all .cpp source files
-- │── /include      # Contains all .h header files
-- │── main.cpp     
+- │── /include      # Contains all .h header files     
 - │── README.md        
 - │── LICENSE 
 - │── /output_files    
@@ -110,13 +122,17 @@ For a detailed explanation of the solver, equations, and implementation, refer t
 ## License
 This project is licensed under the terms of the MIT License. See [License](https://github.com/coding4Acause/2d_UnsteadyVortexPanel/blob/main/LICENSE) for details.
 
-# Future Work
+## Future Work
 
 **Incorporating the viscous effects** -  A hybrid approach can be implemented by first solving the inviscid potential flow to obtain velocity and pressure distributions. These will serve as inputs for a 2D boundary layer solver to estimate local wall friction and boundary layer thickness. If displacement thickness effect is sought, the airfoil geometry is iteratively updated by adjusting the body panels based on local boundary layer displacement, and the potential flow solution is recomputed until convergence is achieved.
 
-## FAQ
+**Airfoil Geometry** – Currently, the code supports only NACA 4-digit series airfoils. Future improvements could extend its capability to handle other NACA series airfoils, as well as non-NACA airfoils, providing greater flexibility in airfoil selection.
+
+**Parallelization for Improved Performance** – The current implementation runs sequentially, but performance can be significantly enhanced using parallel computing techniques. Since the code utilizes the Eigen library, enabling multi-threading with OpenMP and leveraging Eigen’s built-in vectorization (SIMD) can accelerate matrix operations. 
+
 
 ## Contributers
 - [Nipun Arora](https://sites.google.com/view/nipun-arora/home)
+- [Ashish Pathak](http://home.iitj.ac.in/~apathak/)
 - Rohit Chowdhury 
 
