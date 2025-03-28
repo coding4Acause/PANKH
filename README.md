@@ -115,7 +115,7 @@ To compile the code, ensure all .cpp and .h files are in the appropriate directo
 <details>
 <summary> The typical structure is: </summary>
 
-2d_UnsteadyVortexPanel   # the name of the local repository
+PANKH  # the name of the local repository
 - │── /src          # Contains all .cpp source files
 - │── /include      # Contains all .h header files     
 - │── README.md        
