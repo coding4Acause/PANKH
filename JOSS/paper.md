@@ -1,5 +1,5 @@
 ---
-title: 'An unsteady potential flow solver for hovering airfoils'
+title: 'PANKH: An unsteady potential flow solver for hovering airfoils'
 tags:
   - Unsteady aerodynamics
   - Potential Flows
@@ -100,7 +100,7 @@ The unknown vortex strengths are determined by solving a system of $n+1$ equatio
 1) The $n-1$ conditions of zero normal flow are enforced by applying the outer Neumann normal velocity boundary condition at the midpoint (control point or collocation point) of each panel.
 
     \begin{equation}
-    [(\boldsymbol{V}_{bound}+ \boldsymbol{V}_{wake}+\boldsymbol{V}_{kin})_i\cdot\hat{\boldsymbol{n}}_i]_{t_k}=0\,,(1<= i <= n-1) \label{eq:1}
+    [(\boldsymbol{V}_{bound}+ \boldsymbol{V}_{wake}+\boldsymbol{V}_{kin})_i\cdot\hat{\boldsymbol{n}}_i]_{t_k}=0\,,(1 \leq i \leq n-1) \label{eq:1}
     \end{equation}
     
 2)  The $n^{th}$ equation is derived from the conditon of zero vorticity at the trailing edge (Kutta Conditon) to achieve smooth outflow at the trailing edge,
@@ -123,7 +123,7 @@ Once the vortex strengths are determined, the unsteady Bernoulli equation is use
 
 ---
 
-The entire numerical framework discussed above is implemented in the code. The implementation is structured into separate .cpp files, each containing functions dedicated to specific numerical tasks. The function and variable names are chosen to align with their respective roles in the numerical framework, ensuring clarity and ease of use for the user. A detailed guide on input paramters, motion specification, and output interpretation is provided in the project's [README](https://github.com/coding4Acause/2d_UnsteadyVortexPanel/blob/main/README.md). An extensive testing and validation suite has been used to ensure the accuracy of the results obtained from the source code. All validation results are available in the project's GitHub repository, specifically in the `examples` directory.
+The entire numerical framework discussed above is implemented in the code. The implementation is structured into separate .cpp files, each containing functions dedicated to specific numerical tasks. The function and variable names are chosen to align with their respective roles in the numerical framework, ensuring clarity and ease of use for the user. A detailed guide on input paramters, motion specification, and output interpretation is provided in the project's [README](https://github.com/coding4Acause/2d_UnsteadyVortexPanel/blob/main/README.md). An extensive testing and validation suite has been used to ensure the accuracy of the results obtained from the source code. All validation results are available in the project's GitHub repository, specifically in the [`examples`](https://github.com/coding4Acause/PANKH/tree/main/examples) directory.
 
 
 # Acknowledgements
