@@ -1300,6 +1300,7 @@ int main()
         airfoilnormalfile.close();
     }
     pclose(gnuplotPipe);
+    pclose(gnuplotPipe1);
 
     /*plotting the flowfield at the last time step.*/
     for (size_t j = 0; j < gamma_wake_strength.size(); j++)
