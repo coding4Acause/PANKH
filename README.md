@@ -93,8 +93,8 @@ You can obtain the source code in two ways:
 
 If you want to contribute or track changes, clone the repository using Git:
 ```bash
-git clone https://github.com/coding4Acause/2d_UnsteadyVortexPanel.git 
-cd 2d_UnsteadyVortexPanel  
+git clone https://github.com/coding4Acause/PANKH.git 
+cd PANKH  # this is simply the name of the local(host system) directory
 ```
 <!-- cd 2d_UnsteadyVortexPanel is the name of the local(in the host system) directory for the project -->
 </details>
@@ -128,7 +128,7 @@ To compile the code, ensure all .cpp and .h files are in the appropriate directo
 If you are using g++, compile everything together with:
 
 ```bash 
-g++ -o 2d_uvpm_solver src/*.cpp -Iinclude -std=c++11 
+g++ -o PANKH_solver src/*.cpp -Iinclude -std=c++11 
 ````
 </details>
 
@@ -136,16 +136,16 @@ g++ -o 2d_uvpm_solver src/*.cpp -Iinclude -std=c++11
 <summary> Intel compilers </summary>
 
 ```bash 
-icpx -o 2d_uvpm_solver src/*.cpp -Iinclude -std=c++11 
+icpx -o PANKH_solver src/*.cpp -Iinclude -std=c++11 
 ```
 </details>
 
 ## Usage
 - Before compiling the code, modify the input parameters in `constants.cpp` as needed.
-- Ensure that the required output directories exist before running the code. Refer to [`SETUP.md`]() for details on directory structure.  
+- Ensure that the required output directories exist before running the code. Refer to [`SETUP.md`](https://github.com/coding4Acause/PANKH/blob/main/SETUP.md) for details on directory structure.  
 - After compiling the code, run the solver using:
 ```bash
-./ 2d_uvpm_solver
+./ PANKH_solver
 ```
 ## API Documentation  
 
