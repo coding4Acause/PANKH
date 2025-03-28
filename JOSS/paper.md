@@ -114,8 +114,9 @@ The unknown vortex strengths are determined by solving a system of $n+1$ equatio
   \frac{D\Gamma}{Dt}=0\label{eq:3}
   \end{equation}
 
-![Equations formulated to determine the set of unknowns at a time instant $t_k$.](ax=b.jpg)
 The resulting system, formulated as shown in **Figure 2**, is expressed as a single matrix equation and solved using the QR decomposition method, specifically the *ColPivHouseholderQR* class from the *Eigen library*.
+
+![Equations formulated to determine the set of unknowns at a time instant $t_k$.](ax=b.jpg)
 
 ### Force Computation
 Once the vortex strengths are determined, the unsteady Bernoulli equation is used to compute the pressure difference between the upper and lower airfoil surfaces. The aerodynamic force coefficients are then obtained by integrating the pressure distribution along the airfoil.
