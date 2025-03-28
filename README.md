@@ -1,7 +1,7 @@
 # PANKH: A potential flow solver for hovering airfoils
 
 ## Description
-This project implements a 2D unsteady vortex panel method to study the aerodynamics of flapping foils. It is a **low-fidelity solver** that employs the **Laplace equation** to compute the velocity distribution in the flow field while enforcing the *Neumann boundary condition* to satisfy the *no-penetration (zero normal flux)* condition on the airfoil surface. The unsteady form of Bernoulli equation is applied to calculate the pressure difference across the airfoil, enabling the computation of aerodynamic loads. 
+This project implements **PANKH** (Panel Analysis of uNsteady Kinematics of Hovering airfoils), a solver designed to study the aerodynamics of flapping foils. PANKH is a **low-fidelity solver** that solves the **Laplace equation** to determine the velocity distribution in the flow field. It enforces the **Neumann boundary condition** to satisfy the **no-penetration condition** (zero normal flux) on the airfoil surface.   The **unsteady Bernoulli equation** is then applied to compute the pressure difference across the airfoil, enabling the calculation of aerodynamic loads.
 
 The essence of this approach lies in transforming a partial differential equation (PDE) into a system of linear algebraic equations, reducing the problem to a linear algebra problem. The real geometry is discretized into a series of flat panels, and a piecewise linearly varying vortex panel method is used to simulate the flow around the airfoil. At each time instant, a constant-strength vortex panel is shed from the trailing edge to satisfy *Kelvin's Circulation Theorem*, ensuring the correct representation of unsteady effects.
 
@@ -27,7 +27,6 @@ This solver is implemented in C++ and utilizes the **Eigen library** for efficie
 ### Prerequisites
 Before compiling and running the code, ensure the installation of the following dependencies:
 
-
 <details>
   <summary> Install a C++ Compiler</summary>
   
@@ -52,6 +51,39 @@ Before compiling and running the code, ensure the installation of the following 
   - Install, compile and run a code which uses Eigen Library ==> [Getting started](https://eigen.tuxfamily.org/dox/GettingStarted.html)
 </details>
 
+<details>
+  <summary>Install Gnuplot (Required for real-time in-situ plotting)</summary>
+  
+  - **Gnuplot** is needed for real-time visualization of results.
+  - Install Gnuplot on Ubuntu:
+    ```bash
+    sudo apt install gnuplot
+    ```
+  - To test if Gnuplot is working, run:
+    ```bash
+    gnuplot
+    ```
+    If it opens a terminal, Gnuplot is installed correctly.
+</details>
+
+<details>
+  <summary>Install X11 (Required for Gnuplot visualization)</summary>
+  
+  - Install X11 support on Ubuntu:
+    ```bash
+    sudo apt install x11-apps
+    ```
+  - Verify installation:
+    ```bash
+    xeyes  # Should open a graphical window with moving eyes
+    ```
+  - You can also check the Gnuplot terminal type:
+    ```bash
+    gnuplot
+    set terminal
+    ```
+    If `x11` is missing, install **X11** as shown above.
+</details>
   
 ### Getting the Source Code
 
@@ -96,7 +128,7 @@ To compile the code, ensure all .cpp and .h files are in the appropriate directo
 If you are using g++, compile everything together with:
 
 ```bash 
-g++ -o 2d_uvpm_solver src/*.cpp main.cpp -Iinclude -std=c++11 
+g++ -o 2d_uvpm_solver src/*.cpp -Iinclude -std=c++11 
 ````
 </details>
 
@@ -104,7 +136,7 @@ g++ -o 2d_uvpm_solver src/*.cpp main.cpp -Iinclude -std=c++11
 <summary> Intel compilers </summary>
 
 ```bash 
-icpx -o 2d_uvpm_solver src/*.cpp main.cpp -Iinclude -std=c++11 
+icpx -o 2d_uvpm_solver src/*.cpp -Iinclude -std=c++11 
 ```
 </details>
 
@@ -115,9 +147,34 @@ icpx -o 2d_uvpm_solver src/*.cpp main.cpp -Iinclude -std=c++11
 ```bash
 ./ 2d_uvpm_solver
 ```
-## Documentation  
-For a detailed explanation of the solver, equations, and implementation, refer to the full documentation:  
-[Read the Documentation](docs/main_documentation.pdf)
+## API Documentation  
+
+### Generating Source Code Documentation with Doxygen  
+The source code is already documented using **Doxygen comments**, making it easy to generate **HTML-based** documentation.
+
+### Prerequisites (Install Doxygen and Graphviz)  
+Before running Doxygen, ensure the following dependencies are installed:
+
+- **Doxygen** (Required for generating documentation)  
+- **Graphviz** (Required for function call graphs in Doxygen)  
+
+#### Install on Ubuntu  
+```bash
+sudo apt install doxygen graphviz
+```
+#### Verify Installation
+```
+doxygen -v   # Should print the installed Doxygen version
+dot -V       # Should print the installed Graphviz version
+```
+#### Navigate to local repository containing the Doxyfile
+```
+cd path/to/your/repository
+```
+#### Run Doxygen
+```
+doxygen Doxyfile
+```
 
 ## License
 This project is licensed under the terms of the MIT License. See [License](https://github.com/coding4Acause/2d_UnsteadyVortexPanel/blob/main/LICENSE) for details.
