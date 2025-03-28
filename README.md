@@ -142,7 +142,7 @@ icpx -o 2d_uvpm_solver src/*.cpp -Iinclude -std=c++11
 
 ## Usage
 - Before compiling the code, modify the input parameters in `constants.cpp` as needed.
-- Ensure that the required output directories exist before running the code. Refer to `SETUP.md` for details on directory structure.  
+- Ensure that the required output directories exist before running the code. Refer to [`SETUP.md`]() for details on directory structure.  
 - After compiling the code, run the solver using:
 ```bash
 ./ 2d_uvpm_solver
