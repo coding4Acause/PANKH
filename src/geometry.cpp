@@ -60,7 +60,7 @@ void nodal_coordinates_initial(VectorXd &x0, VectorXd &y0) // this function basi
     double x_nd, delta_theta;
     delta_theta = (2 * pi) / (n - 1);
     ofstream myfile;
-    myfile.open("naca_geometry.dat");
+    myfile.open("output_files/_time=0.dat");
 
     if (n % 2 == 0)
     { // even number of nodes
@@ -142,7 +142,7 @@ void nodal_coordinates_instantaneous(VectorXd &x0, VectorXd &y0, VectorXd &x_pp,
 void controlpoints(VectorXd &x_pp, VectorXd &y_pp, VectorXd &x_cp, VectorXd &y_cp)
 {
     ofstream myfile3;
-    myfile3.open("control_points_instantaneous.dat");
+    myfile3.open("output_files/control_points_instantaneous.dat");
     for (int j = 0; j < (n - 1); j++)
     {
         x_cp(j) = x_pp(j) - (x_pp(j) - x_pp(j + 1)) / 2;

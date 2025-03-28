@@ -3,7 +3,7 @@
 
 void Amatrix(MatrixXd &A, VectorXd &x_cp, VectorXd &y_cp, VectorXd &x_pp, VectorXd &y_pp)
 {
-    ofstream myfile3("A_matrix_file.dat");
+   // ofstream myfile3("A_matrix_file.dat");
 
     MatrixXd pcm(2, 2);
     double x1, x2, y1, y2, dx, dy, li;
@@ -31,5 +31,5 @@ void Amatrix(MatrixXd &A, VectorXd &x_cp, VectorXd &y_cp, VectorXd &x_pp, Vector
     A(n - 1, 0) = 1.0;
     A(n - 1, n - 1) = 1.0;
 
-    myfile3 << A << endl;
+   // myfile3 << A << endl;
 }

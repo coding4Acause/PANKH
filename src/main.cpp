@@ -12,6 +12,7 @@
 #include "Amatrix.h"
 #include "NewtonRaphsonNonlinear.h"
 #include "velocity.h"
+#include "gnuplot.h"
 
 using namespace std;
 using namespace Eigen;
@@ -83,10 +84,31 @@ int main()
     double gamma_old = 0.0;
     VectorXd vtotal_wp_cp(2);
     double iterMax = nsteps * ncycles;
-    cout << iterMax << endl;
+    
+    FILE *gnuplotPipe = popen("gnuplot -persist", "w");
+    if (!gnuplotPipe)
+    {
+        cerr << "Error: Could not open GNUplot.\n";
+        return 1;
+    }
+    fprintf(gnuplotPipe, "set grid\n");
+    fprintf(gnuplotPipe, "set title 'In-Situ Wake Vortex Visualization'\n");
+
+    FILE *gnuplotPipe1 = popen("gnuplot -persist", "w");
+    if (!gnuplotPipe)
+    {
+        cerr << "Error: Could not open GNUplot.\n";
+        return 1;
+    }
+    vector<double> xdata;//required for real time plotting cl vs t/T
+    vector<double> ydata;
+
+    double prcntgtme;
 
     for (int iter = 0; iter <= iterMax; iter++)
-    { 
+    {
+        prcntgtme = iter / (double)(iterMax) * 100.0;
+        cout << "percentage time completed =" << "\t" << prcntgtme << endl;
         t = iter * dt;
         alpha_ins = alpha_instantaneous(t);
         nodal_coordinates_instantaneous(x0, y0, x_pp, y_pp, alpha_ins, t);
@@ -278,7 +300,7 @@ int main()
 
         /*cal. phi_le _at the current time step..*/
         ofstream fsl;
-        fsl.open("check_streamline_usptream.dat");
+        fsl.open("output_files/check_streamline_usptream.dat");
         for (int i = 0; i < z; i++)
         {
             xcp_forward_stag_streamline(i) = (x_forward_stag_streamline(i) + x_forward_stag_streamline(i + 1)) / 2.0;
@@ -482,7 +504,10 @@ int main()
         }
 
         // myfile_load_cal << 2.0*t*Qinf/c  << "\t" << cn_tilda / cl_tilda_steady << "\t" << ca_tilda << endl; //uncomment this for sudden acceleration case.
-        myfile_load_cal << t << "\t" << cn_tilda << "\t" << ca_tilda << endl;
+        myfile_load_cal << t/T << "\t" << cn_tilda << "\t" << ca_tilda << endl;
+        
+        xdata.push_back(t/T);
+        ydata.push_back(cn_tilda);
 
         /*now we need to convect the panel as a discrete vortex for the next time step*/
         /* so we need to find the local flow velocity or the velocity induced at the control point of the panels.....*/
@@ -495,6 +520,8 @@ int main()
         {
             wakefile << gamma_wake_x_location[k] << "\t" << gamma_wake_y_location[k] << endl;
         }
+        plot_wake(gnuplotPipe, gamma_wake_x_location, gamma_wake_y_location, wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), x_pp, y_pp);
+        plot_ClvsTime(gnuplotPipe1, xdata, ydata, ncycles);
 
         /***  next task is to propagate the wake point vortices ***/
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -563,6 +590,8 @@ int main()
         bvectorfile.close();
         airfoilnormalfile.close();
     }
+    pclose(gnuplotPipe);
+    pclose(gnuplotPipe1);
 
     /*plotting the flowfield at the last time step.*/
     for (size_t j = 0; j < gamma_wake_strength.size(); j++)
