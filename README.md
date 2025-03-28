@@ -1,4 +1,4 @@
-# 2D Unsteady Vortex Panel Method
+# PANKH: A potential flow solver for hovering airfoils
 
 ## Description
 This project implements a 2D unsteady vortex panel method to study the aerodynamics of flapping foils. It is a **low-fidelity solver** that employs the **Laplace equation** to compute the velocity distribution in the flow field while enforcing the *Neumann boundary condition* to satisfy the *no-penetration (zero normal flux)* condition on the airfoil surface. The unsteady form of Bernoulli equation is applied to calculate the pressure difference across the airfoil, enabling the computation of aerodynamic loads. 
