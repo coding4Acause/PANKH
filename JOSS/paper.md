@@ -61,6 +61,7 @@ instant $t_k$ in the inertial frame of reference xy. ](unsteady_model_at_tk_page
 
 #### Trailing Edge Condition(Kutta Condition)
 Satisfying the boundary conditions alone do not yield a unique solution for $\gamma_i\,(1 \leq i \leq n)$. To obtain an unique solution, the flow must leave the airfoil's sharp trailing edge smoothly along the bisector line, which is the well known ***Kutta Condition*** [@eldredge2019mathematical].
+
 $$
 \Gamma_{\text{TE}}(t_k)=0
 $$
