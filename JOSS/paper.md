@@ -64,6 +64,7 @@ Satisfying the boundary conditions alone do not yield a unique solution for $\ga
 $$
 \Gamma_{\text{TE}}(t_k)=0
 $$
+
 $$
 \gamma_1(t_k)+\gamma_n(t_k)+\gamma_{wp}(t_k)=0
 $$
