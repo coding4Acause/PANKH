@@ -45,6 +45,7 @@ In this solver, we employ the Neumann condition, meaning that the problem is for
 ### Discretization of Geometry and Singularity Element Distribution
 
 The airfoil is discretized into n nodes (panel vertices), forming n-1 flat panels. Each panel has a control point at its midpoint where the no-penetration condition is enforced:
+
 $$
 [(\boldsymbol{V}_{bound}+ \boldsymbol{V}_{wake}+\boldsymbol{V}_{kin})_i\cdot\hat{\boldsymbol{n}}_i]_{t_k}=0\,,(1 \leq i \leq n-1)
 $$
