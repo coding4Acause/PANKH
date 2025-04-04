@@ -49,6 +49,7 @@ The airfoil is discretized into n nodes (panel vertices), forming n-1 flat panel
 $$
 [(\boldsymbol{V}_{bound}+ \boldsymbol{V}_{wake}+\boldsymbol{V}_{kin})_i\cdot\hat{\boldsymbol{n}}_i]_{t_k}=0\,,(1 \leq i \leq n-1)
 $$
+
 The total number of unknowns in the system is $n+1$:
  1) $n$ bound vortex strengths $\gamma_i\,(1 \leq i \leq n)$ on the airfoil.
  2) $\gamma_{wp}$, the strength of the latest shed wake panel. [@vezza1985method,@basu_1978]
