@@ -2,7 +2,7 @@
 #include "VectorOperations.h"
 #include "InfluenceMatrix.h"
 #include "velocity.h"
-#include "NewtonRaphsonNonlinear.h"
+#include "NewtonRaphsonNonLinear.h"
 
 
 /*this function returns the residuals */

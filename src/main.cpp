@@ -10,7 +10,7 @@
 #include "kinematics.h"
 #include "InfluenceMatrix.h"
 #include "Amatrix.h"
-#include "NewtonRaphsonNonlinear.h"
+#include "NewtonRaphsonNonLinear.h"
 #include "velocity.h"
 #include "gnuplot.h"
 
