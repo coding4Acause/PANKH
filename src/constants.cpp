@@ -7,7 +7,7 @@ double xmc = 0;           // 2nd digit of NACA 4 digit series airfoil
 double tmax = 12;         // last two digits of NACA 4 digit series airfoil
 double p = (ymc / 100.0); // p non dimensionalised ymc [p=ymc/c]
 double q = (xmc * 0.1);   // q non dimensionalised xmc [q=xmc/c]
-double tm = (tmax / 100.0);
+double t_m = (tmax / 100.0);
 double trailing_edge_type = 2; // if (trailing_edge_type ==1 ==> open ; else ==> closed)
 
 // Test conditions in water tunnel 

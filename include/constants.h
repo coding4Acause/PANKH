@@ -17,7 +17,7 @@ extern double xmc;
 extern double tmax;
 extern double p;  // Non-dimensionalized ymc [p=ymc/c]
 extern double q;  // Non-dimensionalized xmc [q=xmc/c]
-extern double tm;
+extern double t_m;
 extern double trailing_edge_type;  // 1 = open, else closed
 
 // Test conditions in water tunnel

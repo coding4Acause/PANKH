@@ -25,11 +25,11 @@ MatrixXd geometry(double x_c)
     }
     if (trailing_edge_type == 1.0) // 1 indicates open trailing edge
     {
-        t = c * (tm * (2.969 * sqrt(x_c) - 1.260 * (x_c)-3.516 * pow((x_c), 2) + 2.843 * pow((x_c), 3.0) - 1.015 * (pow((x_c), 4.0))));
+        t = c * (t_m * (2.969 * sqrt(x_c) - 1.260 * (x_c)-3.516 * pow((x_c), 2) + 2.843 * pow((x_c), 3.0) - 1.015 * (pow((x_c), 4.0))));
     }
     else
     {
-        t = c * (tm * (2.980 * sqrt(x_c) - 1.320 * (x_c)-3.286 * pow((x_c), 2) + 2.441 * pow((x_c), 3.0) - 0.815 * (pow((x_c), 4.0))));
+        t = c * (t_m * (2.980 * sqrt(x_c) - 1.320 * (x_c)-3.286 * pow((x_c), 2) + 2.441 * pow((x_c), 3.0) - 0.815 * (pow((x_c), 4.0))));
     }
     if (p == 0.0) //[SYMMETRIC AIRFOIL]
     {
