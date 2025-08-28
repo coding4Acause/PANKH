@@ -21,14 +21,14 @@ const int trailing_edge_type = 2; //[1-closed,else-open]
 
 double c = 0.2;     // chord length
 double Qinf = 10.0; // magnitude of the freestream velocity in m/sec
-double dt = (16.0 * c) / (n * Qinf);
+double dt = (16.0 * c) / ((n-1) * Qinf);
 double tou_max = 50.0; // non-dimensional time
 double timemax = tou_max * c * 0.5 / Qinf;
 const int nsteps = timemax / dt; // max number of iterations or time steps.............
 
 int wakechoice = 0; //[0-free wake, 1-prescribed wake]
 
-/*In this problem we are rotating the airfoil by instantaneous angle of attack keeping the freestream direction parallel to X dirn.[INERTIAL FRAME]*/
+/*In this problem, we are rotating the airfoil by the instantaneous angle of attack, keeping the freestream direction parallel to the x direction.[INERTIAL FRAME]*/
 double Uinf = Qinf;
 double Vinf = 0.0;
 Vector2d freestream(Uinf, Vinf);
@@ -1309,3 +1309,4 @@ int main()
     }
     return 0;
 }
+
