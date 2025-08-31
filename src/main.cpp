@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 {
     if (argc < 2)
     {
-        cerr << "Usage: " << argv[0] << " <input_file.json>" << endl;
+        cerr << "Usage:" << argv[0] << " <input_file.json>" << endl;
         return 1;
     }
 
