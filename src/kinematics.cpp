@@ -1,13 +1,10 @@
 
 #include "kinematics.h"
-#include "MotionParameters.h"
-#include "VectorOperations.h"
-#include "constants.h"
 #include <cmath>
 
 /*******some generalised functions which gives motion of the body.These functions will be required to convert from bff to inertial frame or vice-versa*/
 
-VectorXd body_fixed_frame_to_inertial_frame(double bff_x_coord, double bff_y_coord, double alpha, double t)
+VectorXd body_fixed_frame_to_inertial_frame(double h0,double h1,double phi_h,double x_pitch, double y_pitch,double alpha, double t,double omega,double bff_x_coord, double bff_y_coord)
 {
     /*Generalsied case*/
 
@@ -15,8 +12,8 @@ VectorXd body_fixed_frame_to_inertial_frame(double bff_x_coord, double bff_y_coo
     VectorXd rot_point_bff(3);
 
     /*the coordinates of the point[in bff] about which rotation is taking place */
-    double xrot = c / 3.0;
-    double yrot = 0.0; /* This is zero because the point of rotation lies in the x axis of bff*/
+    double xrot = x_pitch;
+    double yrot = y_pitch; /* This is zero because the point of rotation lies in the x axis of bff*/
     double zrot = 0.0;
 
     rot_point_bff(0) = xrot;
@@ -46,7 +43,7 @@ VectorXd body_fixed_frame_to_inertial_frame(double bff_x_coord, double bff_y_coo
     VectorXd fm(3);
     VectorXd pm(3);
 
-    pm = h_instantaneous(t, omega);
+    pm = h_instantaneous(h0, h1, phi_h, t, omega);
 
     translation = pm;
 
@@ -60,7 +57,7 @@ VectorXd body_fixed_frame_to_inertial_frame(double bff_x_coord, double bff_y_coo
     return (earth_frame);
 }
 // THIS FUNCTION GIVES THE TOTAL VELOCITY AT ANY POINT ON THE BODY OF THE GEOMETRY DUE TO ITS KINEMATICS
-VectorXd velocity_at_surface_of_the_body_inertial_frame(double t,double point_x_coord, double point_y_coord) /*x_coord and ycoord are the point on the surface of the body in inertial frame*/
+VectorXd velocity_at_surface_of_the_body_inertial_frame(double Qinf, double x_pitch, double y_pitch, double h0, double h1, double phi_h, double alpha0, double alpha1, double phi_alpha, double t, double omega, double point_x_coord, double point_y_coord) /*x_coord and ycoord are the point on the surface of the body in inertial frame*/
 {
     VectorXd freestream(3);
     /*ASSUMING THAT THERE IS A ONCOMING FLOW PARALLEL TO THE X AXIS OF THE INERTIAL FRAME */
@@ -78,7 +75,7 @@ VectorXd velocity_at_surface_of_the_body_inertial_frame(double t,double point_x_
 
     /* Obtain the plunging velocity corresponding to the given time */
     VectorXd plunge_vel(3);
-    plunge_vel = h_dot_instantaneous(t, omega);
+    plunge_vel = h_dot_instantaneous(h1, phi_h, t, omega);
 
     /* Obtain the angular velocity corresponding to the given time at the desired point on the surface of the body */
     VectorXd rpos(3);
@@ -94,10 +91,10 @@ VectorXd velocity_at_surface_of_the_body_inertial_frame(double t,double point_x_
     VectorXd fm(3);
     VectorXd pm(3);
 
-    pm = h_instantaneous(t, omega);
+    pm = h_instantaneous(h0, h1, phi_h, t, omega);
 
-    rot_point_bff(0) = c / 3.0;
-    rot_point_bff(1) = 0.0;
+    rot_point_bff(0) = x_pitch;
+    rot_point_bff(1) = y_pitch;
     rot_point_bff(2) = 0.0;
 
     xf = pm + rot_point_bff;
@@ -105,7 +102,7 @@ VectorXd velocity_at_surface_of_the_body_inertial_frame(double t,double point_x_
     rpos = xc - xf;
 
     double alpha_dot;
-    alpha_dot = alpha_dot_instantaneous(t);
+    alpha_dot = alpha_dot_instantaneous(alpha1, phi_alpha, t, omega);
 
     cap_omega(0) = 0.0;
     cap_omega(1) = 0.0;
@@ -124,4 +121,3 @@ VectorXd velocity_at_surface_of_the_body_inertial_frame(double t,double point_x_
 
     return (um);
 }
-

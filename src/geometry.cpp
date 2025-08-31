@@ -1,12 +1,8 @@
 #include "geometry.h"
-#include "kinematics.h"
-#include "constants.h"
-#include "VectorOperations.h"
 #include <fstream>
 
-
 /* this function returns the upper and lower coordinates (dimensionalised) of a NACA 4 digit series airfoil for any x/c. */
-MatrixXd geometry(double x_c)
+MatrixXd geometry(double x_c, double c, double q, double p, int trailing_edge_type, double t_m)
 {
 
     MatrixXd airfoil_points(3, 2);
@@ -23,13 +19,13 @@ MatrixXd geometry(double x_c)
         yc = (p * c * (2.0 * (1 - x_c) / (1 - q) - pow(((1 - x_c) / (1 - q)), 2.0)));
         der_yc = c * ((2.0 * p / (1.0 - q)) * (((1.0 - x_c) / (1.0 - q)) - 1.0));
     }
-    if (trailing_edge_type == 1.0) // 1 indicates open trailing edge
+    if (trailing_edge_type == 1) // 1 indicates open trailing edge
     {
-        t = c * (tm * (2.969 * sqrt(x_c) - 1.260 * (x_c)-3.516 * pow((x_c), 2) + 2.843 * pow((x_c), 3.0) - 1.015 * (pow((x_c), 4.0))));
+        t = c * (t_m * (2.969 * sqrt(x_c) - 1.260 * (x_c)-3.516 * pow((x_c), 2) + 2.843 * pow((x_c), 3.0) - 1.015 * (pow((x_c), 4.0))));
     }
     else
     {
-        t = c * (tm * (2.980 * sqrt(x_c) - 1.320 * (x_c)-3.286 * pow((x_c), 2) + 2.441 * pow((x_c), 3.0) - 0.815 * (pow((x_c), 4.0))));
+        t = c * (t_m * (2.980 * sqrt(x_c) - 1.320 * (x_c)-3.286 * pow((x_c), 2) + 2.441 * pow((x_c), 3.0) - 0.815 * (pow((x_c), 4.0))));
     }
     if (p == 0.0) //[SYMMETRIC AIRFOIL]
     {
@@ -52,8 +48,7 @@ MatrixXd geometry(double x_c)
     return airfoil_points;
 }
 
-
-void nodal_coordinates_initial(VectorXd &x0, VectorXd &y0) // this function basically discretizes the chord in a nonlinear way [COSINE CLUSTERING]
+void nodal_coordinates_initial(int n,double c, double q, double p, int trailing_edge_type, double t_m, VectorXd &x0, VectorXd &y0) // this function basically discretizes the chord in a nonlinear way [COSINE CLUSTERING]
 {
     double theta;
     MatrixXd panel_points(3, 2);
@@ -70,7 +65,7 @@ void nodal_coordinates_initial(VectorXd &x0, VectorXd &y0) // this function basi
         {                                    // storing lower coordinates first
             theta = (i - 0.5) * delta_theta; // cosine clustering
             x_nd = 0.5 * (1 - cos(theta));
-            panel_points = geometry(x_nd);
+            panel_points = geometry(x_nd, c, q, p, trailing_edge_type, t_m);
             x0(n / 2 - i) = panel_points(1, 0); // x_lower
             y0(n / 2 - i) = panel_points(1, 1); // y_lower
         }
@@ -78,7 +73,7 @@ void nodal_coordinates_initial(VectorXd &x0, VectorXd &y0) // this function basi
         {                                    // storing upper coordinates
             theta = (i - 0.5) * delta_theta; // cosine clustering
             x_nd = 0.5 * (1 - cos(theta));
-            panel_points = geometry(x_nd);
+            panel_points = geometry(x_nd, c, q, p, trailing_edge_type, t_m);
             x0(n / 2 + i - 1) = panel_points(0, 0); // x_upper
             y0(n / 2 + i - 1) = panel_points(0, 1); // y_upper
         }
@@ -93,13 +88,13 @@ void nodal_coordinates_initial(VectorXd &x0, VectorXd &y0) // this function basi
         {                                  // lower coordinates
             theta = (i + 1) * delta_theta; // cosine clustering
             x_nd = 0.5 * (1 - cos(theta));
-            panel_points = geometry(x_nd);
+            panel_points = geometry(x_nd, c, q, p, trailing_edge_type, t_m);
             x0(np2 - 1 - i) = panel_points(1, 0); // x_lower
             y0(np2 - 1 - i) = panel_points(1, 1); // y_lower
         }
         // middle point
         x_nd = 0.5 * (1 - cos(0.0));
-        panel_points = geometry(x_nd);
+        panel_points = geometry(x_nd, c, q, p, trailing_edge_type, t_m);
         x0(np2) = panel_points(0, 0); // x_middle
         y0(np2) = panel_points(0, 1); // y_middle
 
@@ -107,7 +102,7 @@ void nodal_coordinates_initial(VectorXd &x0, VectorXd &y0) // this function basi
         {                                  // upper coordinates
             theta = (i + 1) * delta_theta; // cosine clustering
             x_nd = 0.5 * (1 - cos(theta));
-            panel_points = geometry(x_nd);
+            panel_points = geometry(x_nd, c, q, p, trailing_edge_type, t_m);
             x0(np2 + 1 + i) = panel_points(0, 0); // x_upper
             y0(np2 + 1 + i) = panel_points(0, 1); // y_upper
         }
@@ -119,7 +114,7 @@ void nodal_coordinates_initial(VectorXd &x0, VectorXd &y0) // this function basi
     }
 }
 
-void nodal_coordinates_instantaneous(VectorXd &x0, VectorXd &y0, VectorXd &x_pp, VectorXd &y_pp, double alpha, double t)
+void nodal_coordinates_instantaneous(int n,double h0,double h1,double phi_h,double x_pitch, double y_pitch,double alpha, double t,double omega,VectorXd &x0, VectorXd &y0, VectorXd &x_pp, VectorXd &y_pp)
 {
     ofstream myfile2;
     myfile2.open("output_files/panel_points_instantaneous.dat");
@@ -130,8 +125,8 @@ void nodal_coordinates_instantaneous(VectorXd &x0, VectorXd &y0, VectorXd &x_pp,
     VectorXd inert_temp(2);
 
     for (int i = 0; i < n; i++)
-    {
-        inert_temp = body_fixed_frame_to_inertial_frame(x0(i), y0(i), alpha, t);
+    {    
+        inert_temp = body_fixed_frame_to_inertial_frame(h0,h1,phi_h,x_pitch,y_pitch,alpha,t,omega,x0(i), y0(i));
         x_pp(i) = inert_temp(0);
         y_pp(i) = inert_temp(1);
         myfile2 << x_pp(i) << "\t" << y_pp(i) << endl;
@@ -139,7 +134,7 @@ void nodal_coordinates_instantaneous(VectorXd &x0, VectorXd &y0, VectorXd &x_pp,
 }
 
 /*calculate the control points */
-void controlpoints(VectorXd &x_pp, VectorXd &y_pp, VectorXd &x_cp, VectorXd &y_cp)
+void controlpoints(int n, VectorXd &x_pp, VectorXd &y_pp, VectorXd &x_cp, VectorXd &y_cp)
 {
     ofstream myfile3;
     myfile3.open("output_files/control_points_instantaneous.dat");
@@ -151,7 +146,7 @@ void controlpoints(VectorXd &x_pp, VectorXd &y_pp, VectorXd &x_cp, VectorXd &y_c
     }
 }
 
-void panel(VectorXd &l_x, VectorXd &l_y, VectorXd &l, VectorXd &x_pp, VectorXd &y_pp)
+void panel(int n, VectorXd &l_x, VectorXd &l_y, VectorXd &l, VectorXd &x_pp, VectorXd &y_pp)
 {
     for (int i = 0; i < n - 1; i++)
     {
@@ -161,7 +156,7 @@ void panel(VectorXd &l_x, VectorXd &l_y, VectorXd &l, VectorXd &x_pp, VectorXd &
     }
 }
 
-void normal_function_for_panels(MatrixXd &unit_normal, VectorXd &l_x, VectorXd &l_y) /*here we are finding the unit normal of n-1 panels*/
+void normal_function_for_panels(int n, MatrixXd &unit_normal, VectorXd &l_x, VectorXd &l_y) /*here we are finding the unit normal of n-1 panels*/
 {
     VectorXd panel_length(2);
     VectorXd unit_normal_vector(2);
@@ -174,7 +169,7 @@ void normal_function_for_panels(MatrixXd &unit_normal, VectorXd &l_x, VectorXd &
         unit_normal(i, 1) = unit_normal_vector(1);
     }
 }
-void tangent_function_for_panels(MatrixXd &unit_tangent, VectorXd &l_x, VectorXd &l_y) /*here we are finding the unit normal of n-1 panels*/
+void tangent_function_for_panels(int n, MatrixXd &unit_tangent, VectorXd &l_x, VectorXd &l_y) /*here we are finding the unit normal of n-1 panels*/
 {
     VectorXd panel_length(2);
     VectorXd unit_tangent_vector(2);

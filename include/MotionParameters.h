@@ -1,63 +1,67 @@
-#ifndef MOTION_PARAMETERS_H
-#define MOTION_PARAMETERS_H
+#ifndef MOTIONPARAMETERS_H
+#define MOTIONPARAMETERS_H
 
 #include <Eigen/Dense>
-using Eigen::VectorXd;
 
-/* Declare global motion parameters (defined elsewhere) */
-extern double h1, phi_h, alpha0, alpha1, omega, phi_alpha;
+using namespace Eigen;
 
 /**
- * @brief Computes the instantaneous vertical displacement.
- * 
- * This function calculates the instantaneous heaving motion of 
- * the airfoil at a given time `t` and angular frequency `omega`.
+ * @brief Computes the instantaneous heaving displacement vector.
  *
- * @param t Current time instant.
- * @param omega Angular frequency of motion.
- * @return VectorXd The vertical displacement of the airfoil.
+ * Calculates the heaving displacement of an airfoil at a given time, based on a sinusoidal motion
+ * model. The displacement is returned as a 3D vector, with the y-component representing the
+ * heaving motion (negative sign indicates downward motion is positive).
+ *
+ * @param h0 Heaving offset (meters).
+ * @param h1 Heaving amplitude (meters).
+ * @param phi_h Heaving phase angle (radians).
+ * @param t Current time (seconds).
+ * @param omega Angular frequency (radians/second).
+ * @return VectorXd A 3D vector [0, -h, 0] where h is the heaving displacement.
  */
-VectorXd h_instantaneous(double t, double omega);
+VectorXd h_instantaneous(double h0, double h1, double phi_h, double t, double omega);
 
 /**
- * @brief Computes the instantaneous velocity in the vertical direction.
- * 
- * This function determines the velocity corresponding to 
- * the heaving motion of the airfoil at time `t` and angular frequency `omega`.
+ * @brief Computes the instantaneous heaving velocity vector.
  *
- * @param t Current time instant.
- * @param omega Angular frequency of motion.
- * @return VectorXd The vertical velocity.
+ * Calculates the heaving velocity of an airfoil at a given time, based on the derivative of the
+ * sinusoidal heaving motion. The velocity is returned as a 3D vector, with the y-component
+ * representing the heaving velocity (negative sign indicates downward velocity is positive).
+ *
+ * @param h1 Heaving amplitude (meters).
+ * @param phi_h Heaving phase angle (radians).
+ * @param t Current time (seconds).
+ * @param omega Angular frequency (radians/second).
+ * @return VectorXd A 3D vector [0, -h_dot, 0] where h_dot is the heaving velocity.
  */
-VectorXd h_dot_instantaneous(double t, double omega);
+VectorXd h_dot_instantaneous(double h1, double phi_h, double t, double omega);
 
 /**
- * @brief Computes the instantaneous angle of attack.
+ * @brief Computes the instantaneous pitch angle.
  *
- * This function calculates the pitch angle of the airfoil 
- * as a function of time `t`.
+ * Calculates the pitch angle of an airfoil at a given time, based on a sinusoidal motion model.
  *
- * @param t Current time instant.
- * @return double The instantaneous angle of attack in radians.
+ * @param alpha0 Pitch angle offset (radians).
+ * @param alpha1 Pitch angle amplitude (radians).
+ * @param phi_alpha Pitch phase angle (radians).
+ * @param t Current time (seconds).
+ * @param omega Angular frequency (radians/second).
+ * @return double The instantaneous pitch angle (radians).
  */
-double alpha_instantaneous(double t);
+double alpha_instantaneous(double alpha0, double alpha1, double phi_alpha, double t, double omega);
 
 /**
- * @brief Computes the instantaneous rate of change of angle of attack.
+ * @brief Computes the instantaneous pitch angular velocity.
  *
- * This function calculates the angular velocity of the airfoil's 
- * pitching motion at time `t`.
+ * Calculates the pitch angular velocity of an airfoil at a given time, based on the derivative of
+ * the sinusoidal pitch motion.
  *
- * @param t Current time instant.
- * @return double The instantaneous pitch rate in radians per second.
+ * @param alpha1 Pitch angle amplitude (radians).
+ * @param phi_alpha Pitch phase angle (radians).
+ * @param t Current time (seconds).
+ * @param omega Angular frequency (radians/second).
+ * @return double The instantaneous pitch angular velocity (radians/second).
  */
-double alpha_dot_instantaneous(double t);
+double alpha_dot_instantaneous(double alpha1, double phi_alpha, double t, double omega);
 
-
-/* Function declarations */
-// VectorXd h_instantaneous(double t, double omega);
-// VectorXd h_dot_instantaneous(double t, double omega);
-// double alpha_instantaneous(double t);
-// double alpha_dot_instantaneous(double t);
-
-#endif // MOTION_PARAMETERS_H
+#endif // MOTIONPARAMETERS_H

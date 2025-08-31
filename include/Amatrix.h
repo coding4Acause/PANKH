@@ -2,9 +2,9 @@
 #define AMATRIX_H
 
 #include <Eigen/Dense>
-#include <fstream>  // For file writing
 #include <iostream>
 #include "InfluenceMatrix.h"
+
 
 using namespace Eigen;
 using namespace std;
@@ -15,6 +15,7 @@ using namespace std;
  * @details This function calculates the entire coefficient matrix with the help of panel coefficient or panel influence matrix based on the 
  * control points and panel points of the airfoil. It also writes the computed matrix to a file.
  * 
+ * @param n # panel vertices nodes on airfoil geometry
  * @param A Reference to the matrix where computed values will be stored.
  * @param x_cp Vector of x-coordinates of control points.
  * @param y_cp Vector of y-coordinates of control points.
@@ -23,6 +24,6 @@ using namespace std;
  * 
  */
 // Function declaration
-void Amatrix(MatrixXd &A, VectorXd &x_cp, VectorXd &y_cp, VectorXd &x_pp, VectorXd &y_pp);
+void Amatrix(int n, MatrixXd &A, VectorXd &x_cp, VectorXd &y_cp, VectorXd &x_pp, VectorXd &y_pp);
 
 #endif  // AMATRIX_H

@@ -13,34 +13,57 @@
  #define KINEMATICS_H
  
  #include <Eigen/Dense>
+ #include "MotionParameters.h"
+ #include "VectorOperations.h"
+ 
  using namespace Eigen;
+
  
- /**
-  * @brief Transforms coordinates from the body-fixed frame (BFF) to the inertial frame.
-  *
-  * The function - [body_fixed_frame_to_inertial_frame] applies a rotation and translation to convert a point from the
-  * body-fixed coordinate system to the global inertial frame.
-  *
-  * @param bff_x_coord X-coordinate of the point in BFF.
-  * @param bff_y_coord Y-coordinate of the point in BFF.
-  * @param alpha Rotation angle (radians).
-  * @param t Time instant.
-  * @return VectorXd (2D) containing the transformed coordinates in the inertial frame.
-  */
- VectorXd body_fixed_frame_to_inertial_frame(double bff_x_coord, double bff_y_coord, double alpha, double t);
- 
- /**
-  * @brief Computes velocity at a surface point of the body in the inertial frame.
-  *
-  * This function calculates the total velocity at any given point on the body
-  * due to its motion, including contributions from freestream velocity, plunging,
-  * and pitching motions.
-  *
-  * @param t Time instant.
-  * @param point_x_coord X-coordinate of the surface point in the inertial frame.
-  * @param point_y_coord Y-coordinate of the surface point in the inertial frame.
-  * @return VectorXd (2D) representing the velocity components at the given surface point.
-  */
- VectorXd velocity_at_surface_of_the_body_inertial_frame(double t, double point_x_coord, double point_y_coord);
- 
- #endif // KINEMATICS_H
+/**
+ * @brief Transforms coordinates from the body-fixed frame to the inertial frame.
+ *
+ * Converts a point’s coordinates from the body-fixed frame (BFF) to the inertial frame, accounting
+ * for heaving and pitching motions about a specified rotation point. The transformation includes
+ * rotation (via pitch angle) and translation (via heaving motion).
+ *
+ * @param h0 Heaving offset (meters).
+ * @param h1 Heaving amplitude (meters).
+ * @param phi_h Heaving phase angle (radians).
+ * @param x_pitch x-coordinate of the pitch axis in the body-fixed frame (meters).
+ * @param y_pitch y-coordinate of the pitch axis in the body-fixed frame (meters).
+ * @param alpha Pitch angle (radians).
+ * @param t Current time (seconds).
+ * @param omega Angular frequency (radians/second).
+ * @param bff_x_coord x-coordinate of the point in the body-fixed frame (meters).
+ * @param bff_y_coord y-coordinate of the point in the body-fixed frame (meters).
+ * @return VectorXd A 2D vector [x, y] representing the point’s coordinates in the inertial frame.
+ * @see h_instantaneous
+ */
+VectorXd body_fixed_frame_to_inertial_frame(double h0, double h1, double phi_h, double x_pitch, double y_pitch, double alpha, double t, double omega, double bff_x_coord, double bff_y_coord);
+
+/**
+ * @brief Computes the total velocity at a point on the body’s surface in the inertial frame.
+ *
+ * Calculates the velocity at a specified point on the body’s surface, considering freestream flow,
+ * plunging motion, and pitching motion about a rotation point. The freestream flow is assumed to be
+ * parallel to the x-axis of the inertial frame.
+ *
+ * @param Qinf Freestream flow speed (meters/second).
+ * @param x_pitch x-coordinate of the pitch axis in the body-fixed frame (meters).
+ * @param y_pitch y-coordinate of the pitch axis in the body-fixed frame (meters).
+ * @param h0 Heaving offset (meters).
+ * @param h1 Heaving amplitude (meters).
+ * @param phi_h Heaving phase angle (radians).
+ * @param alpha0 Pitch angle offset (radians).
+ * @param alpha1 Pitch angle amplitude (radians).
+ * @param phi_alpha Pitch phase angle (radians).
+ * @param t Current time (seconds).
+ * @param omega Angular frequency (radians/second).
+ * @param point_x_coord x-coordinate of the point in the inertial frame (meters).
+ * @param point_y_coord y-coordinate of the point in the inertial frame (meters).
+ * @return VectorXd A 2D vector [u, v] representing the total velocity in the inertial frame.
+ * @see h_dot_instantaneous, alpha_dot_instantaneous, cross
+ */
+VectorXd velocity_at_surface_of_the_body_inertial_frame(double Qinf, double x_pitch, double y_pitch, double h0, double h1, double phi_h, double alpha0, double alpha1, double phi_alpha, double t, double omega, double point_x_coord, double point_y_coord);
+
+#endif // KINEMATICS_H

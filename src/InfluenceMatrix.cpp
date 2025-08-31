@@ -1,6 +1,6 @@
-
 #include "InfluenceMatrix.h"
 #include "constants.h"
+
 // THIS FUNCTION RETURNS THE INFLUENCE OF A LINEARLY STRENGTH VORTEX PANEL AT A RANDOM POINT IN THE FLOWFIELD.
 MatrixXd influence_matrix(double point1_x, double point1_y, double point2_x, double point2_y, double desired_point_x, double desired_point_y)
 {

@@ -1,8 +1,8 @@
 #include "velocity.h"
-#include "constants.h"
+
 
 // THIS FUNCTION CALCULATES THE VELOCITY INDUCED BY THE BOUND VORTICES(AIRFOIL VORTEX PANELS AT ANY RANDOM POINT IN THE FLOWFIELD)
-VectorXd velocity_bound_vortices(VectorXd &x_pp, VectorXd &y_pp, double x, double y, VectorXd G_bound)
+VectorXd velocity_bound_vortices(int n,VectorXd &x_pp, VectorXd &y_pp, double x, double y, VectorXd G_bound)
 {
     VectorXd VEL(2);
     VEL.setZero();

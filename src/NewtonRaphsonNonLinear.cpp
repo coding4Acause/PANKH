@@ -1,12 +1,8 @@
-#include "constants.h"
-#include "VectorOperations.h"
-#include "InfluenceMatrix.h"
-#include "velocity.h"
-#include "NewtonRaphsonNonlinear.h"
-
+#include "NewtonRaphsonNonLinear.h"
+#include <cmath>
 
 /*this function returns the residuals */
-VectorXd newton_raphson(double dt, double t, double lwp, double theta_wp, VectorXd &vtotal_wp_cp, VectorXd &x_pp, VectorXd &y_pp, VectorXd &x_cp, VectorXd &y_cp, VectorXd &l, VectorXd &B_unsteady, VectorXd &gamma_unsteady, double gamma_old, VectorXd &gamma_bound, vector<double> &gamma_wake_strength, vector<double> &gamma_wake_x_location, vector<double> &gamma_wake_y_location, VectorXd &wake_panel_cp, VectorXd &wake_panel_normal, MatrixXd &A_unsteady, MatrixXd &unit_normal, MatrixXd &wake_panel_coordinates)
+VectorXd newton_raphson(int n, double dt, double t, double lwp, double theta_wp,VectorXd freestream, VectorXd &vtotal_wp_cp, VectorXd &x_pp, VectorXd &y_pp, VectorXd &x_cp, VectorXd &y_cp, VectorXd &l, VectorXd &B_unsteady, VectorXd &gamma_unsteady, double gamma_old, VectorXd &gamma_bound, vector<double> &gamma_wake_strength, vector<double> &gamma_wake_x_location, vector<double> &gamma_wake_y_location, VectorXd &wake_panel_cp, VectorXd &wake_panel_normal, MatrixXd &A_unsteady, MatrixXd &unit_normal, MatrixXd &wake_panel_coordinates)
 {
     VectorXd wake_influence(n - 1);
     Vector2d unit_gamma_wake(1, 1);
@@ -58,7 +54,7 @@ VectorXd newton_raphson(double dt, double t, double lwp, double theta_wp, Vector
     }
 
     /*finding the total velocity induced at the control point of the wake panel*/
-    velocity_bound = velocity_bound_vortices(x_pp, y_pp, wake_panel_cp(0), wake_panel_cp(1), gamma_bound);
+    velocity_bound = velocity_bound_vortices(n,x_pp, y_pp, wake_panel_cp(0), wake_panel_cp(1), gamma_bound);
     if (t == 0)
     {
         shed_vel(0) = 0.0;
@@ -73,7 +69,7 @@ VectorXd newton_raphson(double dt, double t, double lwp, double theta_wp, Vector
             shed_vel = shed_vel + velocity_induced_due_to_discrete_vortex(gamma_wake_strength[j], gamma_wake_x_location[j], gamma_wake_y_location[j], wake_panel_cp(0), wake_panel_cp(1));
         }
     }
-
+ 
     vtotal_wp_cp = velocity_bound + shed_vel + freestream;
     VectorXd residuals(2);
     residuals(0) = lwp - magnitude(vtotal_wp_cp) * dt;

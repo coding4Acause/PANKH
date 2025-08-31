@@ -30,25 +30,52 @@ Before compiling and running the code, ensure the installation of the following 
 <details>
   <summary> Install a C++ Compiler</summary>
   
-  - You need a compiler that supports C++11 or later.
-  - Recommended options:
-    - GCC (GNU Compiler Collection)
-    - Intel C++ Compiler (ICPC/ICX/IPCX)
+   A C++ compiler supporting the C++11 standard or later is required for building the project. Recommended compilers include:
+    
+  - **Clang**: A high-performance, LLVM-based compiler with robust C++ support.
+  - **GCC**: The GNU Compiler Collection, widely used for C++ development.
+  - **Intel oneAPI DPC++/C++ Compiler (icpx)**: Optimized for high-performance computing
   - To install GCC on Ubuntu:
     ```bash
     sudo apt install g++
     ```
+  - To install Clang on Ubuntu and ensure compatibility with the GNU C++ standard library (libstdc++):
+
+    ```bash
+    sudo apt install clang libstdc++-8-dev
+    ```
+    - clang: Provides the Clang compiler (clang++).
+    - libstdc++-8-dev: Installs the GNU C++ standard library headers (e.g., `<iostream>`, `<cmath>`, `<vector>`) required for Clang to compile C++ code using libstdc++. 
+    - For Ubuntu 18.04, libstdc++-8-dev is typically compatible; for other versions, use libstdc++-dev or the version matching your GCC installation (e.g., libstdc++-10-dev for Ubuntu 20.04).
 </details>
 
 <details>
-  <summary> Install Eigen Library(Required for matrix operations:)</summary>
-  
-- Install via package manager:
+  <summary> Install Eigen Library (Required for matrix operations:)</summary>
+     
+- On Ubuntu:
+  - Install via package manager (Recommended):
     ```bash
     sudo apt install libeigen3-dev  # Ubuntu
     ```
-  - Or download manually from [Eigen's official website](https://eigen.tuxfamily.org/).
-  - Install, compile and run a code which uses Eigen Library ==> [Getting started](https://eigen.tuxfamily.org/dox/GettingStarted.html)
+    This installs Eigen headers typically in `/usr/include/eigen3`.
+
+  - Manual Installation: Download Eigen from the official website and extract it to a directory `(e.g., /usr/local/include/eigen3)`. Update the include path during compilation if necessary. [Eigen's official website](https://eigen.tuxfamily.org/).
+
+- On macOS:
+  - Install Eigen via Homebrew:
+  ```bash
+     brew install eigen
+  ```
+  - When compiling, you may need to specify the Eigen include path explicitly:
+  ```bash
+  g++ -I/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3/ -Iinclude src/*.cpp -o PANKH_solver
+  ```
+  Note: When executing the program, avoid extra whitespace:
+  ```bash
+  ./PANKH_solver    # Correct
+  ./ PANKH_solver   # Incorrect
+  ```
+- For further help: [Getting started with Eigen](https://eigen.tuxfamily.org/dox/GettingStarted.html)
 </details>
 
 <details>
@@ -121,6 +148,15 @@ PANKH  # the name of the local repository
 - │── README.md        
 - │── LICENSE 
 - │── /output_files    
+</details>
+
+<details>
+<summary> clang compiler </summary>
+To compile with Clang, use the following command to link all source files and include necessary headers:
+
+```bash 
+clang++ -o PANKH_solver src/*.cpp -Iinclude -std=c++11 
+````
 </details>
 
 <details>

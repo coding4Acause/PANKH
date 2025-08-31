@@ -4,6 +4,7 @@
 #include <Eigen/Dense>
 #include <cmath>
 #include "InfluenceMatrix.h"
+#include "constants.h"
 
 using namespace Eigen;
 using namespace std;
@@ -24,7 +25,7 @@ using namespace std;
  *
  * @return VectorXd A 2D velocity vector [Vx, Vy] induced at the given (x, y) location.
  */
-VectorXd velocity_bound_vortices(VectorXd &x_pp, VectorXd &y_pp, double x, double y, VectorXd G_bound);
+VectorXd velocity_bound_vortices(int n, VectorXd &x_pp, VectorXd &y_pp, double x, double y, VectorXd G_bound);
 
 /**
  * @brief Computes the velocity induced at a point by a single discrete vortex.

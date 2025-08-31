@@ -2,29 +2,97 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <fstream>
-
-#include "constants.h"
+#include "json.hpp"
 #include "VectorOperations.h"
 #include "geometry.h"
 #include "MotionParameters.h"
 #include "kinematics.h"
 #include "InfluenceMatrix.h"
 #include "Amatrix.h"
-#include "NewtonRaphsonNonlinear.h"
+#include "NewtonRaphsonNonLinear.h"
 #include "velocity.h"
 #include "gnuplot.h"
+#include "constants.h"
 
 using namespace std;
 using namespace Eigen;
+using json = nlohmann::json;
 
-int main()
+int main(int argc, char *argv[])
 {
-    int ncycles = 8;           // number of cycles
-    int nsteps = 40;           // time steps or time instances or iterations per cycle
+    if (argc < 2)
+    {
+        cerr << "Usage: " << argv[0] << " <input_file.json>" << endl;
+        return 1;
+    }
+
+    string filename = argv[1];
+    ifstream inputFile(filename);
+    if (!inputFile.is_open())
+    {
+        cerr << "Error: Cannot open " << filename << endl;
+        return 1;
+    }
+
+    json input;
+    inputFile >> input;
+
+    // Extract geometry
+    int n = input["geometry"]["n"];
+    double c = input["geometry"]["c"];
+    double ymc = input["geometry"]["ymc"];
+    double xmc = input["geometry"]["xmc"];
+    double tmax = input["geometry"]["tmax"];
+    int trailing_edge_type = input["geometry"]["trailing_edge_type"];
+
+    // Derived parameters
+    double p = ymc / 100.0;
+    double q = xmc / 10.0;
+    double t_m = tmax / 100.0;
+
+    // Extract flow
+    double rho = input["flow"]["rho"];
+    double mu = input["flow"]["mu"];
+    double Re = input["flow"]["Re"];
+    double Qinf = input["flow"]["Qinf"].is_null() ? (Re * mu / (rho * c)) : input["flow"]["Qinf"].get<double>();
+    double Vinf = input["flow"]["Vinf"];
+    VectorXd freestream(2); // size must be specified
+    freestream(0) = Qinf;
+    freestream(1) = Vinf;
+
+    // Extract motion
+    double k = input["motion"]["k"];
+    double h1 = input["motion"]["h1"].is_null() ? 0.25 * c : input["motion"]["h1"].get<double>();
+    double h0 = input["motion"]["h0"];
+    double alpha0 = input["motion"]["alpha0"].get<double>() * DEG2RAD;
+    double phi_h = input["motion"]["phi_h"].get<double>() * DEG2RAD;
+
+    // alpha1: either use JSON input (if provided) or derive it
+    double alpha1 = input["motion"]["alpha1"].is_null()
+                        ? (15.0 * DEG2RAD - atan2(2.0 * k * h1, c)) // derived
+                        : input["motion"]["alpha1"].get<double>() * DEG2RAD;      // provided
+
+    // Pitch axis: default to mid-chord if not specified
+    double x_pitch = input["motion"]["x_pitch"].is_null() ? c / 3.0 : input["motion"]["x_pitch"].get<double>();
+    double y_pitch = input["motion"]["y_pitch"].is_null() ? 0.0 : input["motion"]["y_pitch"].get<double>();
+
+
+    // Extract simulation
+    int wake = input["simulation"]["wake"];
+    double tolerance = input["simulation"]["tolerance"];
+    double epsilon = input["simulation"]["epsilon"];
+    int ncycles = input["simulation"]["ncycles"];
+    int nsteps = input["simulation"]["nsteps"];
+    int z = input["simulation"]["z"];
+    
+    double phi_alpha=(90.0*phi_h)*DEG2RAD;
+    double omega =(2.0*k*Qinf)/c;
+    double T = 2.0*pi/omega;
     double dt = T / nsteps;    // time increment
-    double tmax = ncycles * T; // maximum time
+    double time_max = ncycles * T; // maximum time
     double t;
     double alpha_ins;
+
     // cout << freestream << endl;
 
     VectorXd x0(n), y0(n), x_pp(n), y_pp(n), x_cp(n - 1), y_cp(n - 1);
@@ -52,7 +120,7 @@ int main()
     double gamma_wp = 0.0;
     double offset = 1.e-4;
 
-    nodal_coordinates_initial(x0, y0);
+    nodal_coordinates_initial(n, c, q, p, trailing_edge_type, t_m, x0, y0);
 
     Vector2d rhs_vector, length_and_angle;
     Matrix2d jacobian;
@@ -84,7 +152,7 @@ int main()
     double gamma_old = 0.0;
     VectorXd vtotal_wp_cp(2);
     double iterMax = nsteps * ncycles;
-    
+
     FILE *gnuplotPipe = popen("gnuplot -persist", "w");
     if (!gnuplotPipe)
     {
@@ -100,7 +168,7 @@ int main()
         cerr << "Error: Could not open GNUplot.\n";
         return 1;
     }
-    vector<double> xdata;//required for real time plotting cl vs t/T
+    vector<double> xdata; // required for real time plotting cl vs t/T
     vector<double> ydata;
 
     double prcntgtme;
@@ -110,13 +178,13 @@ int main()
         prcntgtme = iter / (double)(iterMax) * 100.0;
         cout << "percentage time completed =" << "\t" << prcntgtme << endl;
         t = iter * dt;
-        alpha_ins = alpha_instantaneous(t);
-        nodal_coordinates_instantaneous(x0, y0, x_pp, y_pp, alpha_ins, t);
-        controlpoints(x_pp, y_pp, x_cp, y_cp);
-        Amatrix(A, x_cp, y_cp, x_pp, y_pp);
-        panel(l_x, l_y, l, x_pp, y_pp);
-        normal_function_for_panels(unit_normal, l_x, l_y);
-        tangent_function_for_panels(unit_tangent, l_x, l_y);
+        alpha_ins = alpha_instantaneous(alpha0, alpha1, phi_alpha, t, omega);
+        nodal_coordinates_instantaneous(n,h0,h1,phi_h,x_pitch,y_pitch,alpha_ins,t,omega,x0,y0,x_pp,y_pp);
+        controlpoints(n, x_pp, y_pp, x_cp, y_cp);
+        Amatrix(n, A, x_cp, y_cp, x_pp, y_pp);
+        panel(n, l_x, l_y, l, x_pp, y_pp);
+        normal_function_for_panels(n, unit_normal, l_x, l_y);
+        tangent_function_for_panels(n, unit_tangent, l_x, l_y);
 
         string name = "output_files/vortex_shedding/wake_";
         name += to_string(iter);
@@ -166,7 +234,7 @@ int main()
             airfoilnormalfile << unit_normal(i, 0) << "\t" << unit_normal(i, 1) << endl;
         }
 
-        cout << "percentage completed =" << iter/iterMax*100.0 << endl;
+        cout << "percentage completed =" << iter / iterMax * 100.0 << endl;
         /*self induced portion and kutta conditon...*/
         for (int i = 0; i < n; i++)
         {
@@ -206,7 +274,7 @@ int main()
                     shed_vel = shed_vel + velocity_induced_due_to_discrete_vortex(gamma_wake_strength[j], gamma_wake_x_location[j], gamma_wake_y_location[j], x_cp(i), y_cp(i));
                 }
             }
-            flow_vel = velocity_at_surface_of_the_body_inertial_frame(t, x_cp(i), y_cp(i));
+            flow_vel = velocity_at_surface_of_the_body_inertial_frame(Qinf, x_pitch, y_pitch, h0, h1, phi_h, alpha0, alpha1, phi_alpha, t, omega, x_cp(i), y_cp(i));
             // cout << magnitude(flow_vel) << endl;
 
             B_unsteady(i) = -dot(shed_vel + flow_vel, normal_vector_panel_cp);
@@ -224,17 +292,17 @@ int main()
         {
             cout << "convergence iteration= " << conv_iter << endl;
             /*first step is to fill the first column of the Jacobian matrix...*/
-            residuals = newton_raphson(dt, t, lwp, theta_wp, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
+            residuals = newton_raphson(n,dt, t, lwp, theta_wp, freestream, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
             jacobian(0, 0) = 0.0;
             jacobian(0, 1) = 0.0;
             jacobian(1, 0) = 0.0;
             jacobian(1, 1) = 0.0;
-            residuals_plus = newton_raphson(dt, t, lwp + epsilon, theta_wp, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
+            residuals_plus = newton_raphson(n,dt, t, lwp + epsilon, theta_wp, freestream, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
 
             jacobian(0, 0) = (residuals_plus(0) - residuals(0)) / epsilon;
             jacobian(1, 0) = (residuals_plus(1) - residuals(1)) / epsilon;
 
-            residuals_plus = newton_raphson(dt, t, lwp, theta_wp + epsilon, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
+            residuals_plus = newton_raphson(n,dt, t, lwp, theta_wp + epsilon, freestream, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
 
             jacobian(0, 1) = (residuals_plus(0) - residuals(0)) / epsilon;
             jacobian(1, 1) = (residuals_plus(1) - residuals(1)) / epsilon;
@@ -258,7 +326,7 @@ int main()
 
             conv_iter++;
         } while ((convergence) > tolerance);
-        residuals = newton_raphson(dt, t, lwp, theta_wp, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
+        residuals = newton_raphson(n,dt, t, lwp, theta_wp, freestream, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
         gamma_wp = gamma_unsteady(n);
         cout << "CONVERGED VALUES =" << "\t" << "uwp= " << vtotal_wp_cp(0) << "\t" << "vwp=" << vtotal_wp_cp(1) << "\t" << "gamma_wp=" << gamma_wp << "\t" << "lwp=" << lwp << "\t" << "theta_wp=" << theta_wp << endl;
         cout << "--------------------------------------------------------------------------------------------------------------------- " << endl;
@@ -332,7 +400,7 @@ int main()
         {
             panel_coeff_matrix_wake = influence_matrix(wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), xcp_forward_stag_streamline(i), ycp_forward_stag_streamline(i));
             vifsl_rw = panel_coeff_matrix_wake * wake_panel_strength;
-            vifsl_b = velocity_bound_vortices(x_pp, y_pp, xcp_forward_stag_streamline(i), ycp_forward_stag_streamline(i), gamma_bound);
+            vifsl_b = velocity_bound_vortices(n, x_pp, y_pp, xcp_forward_stag_streamline(i), ycp_forward_stag_streamline(i), gamma_bound);
             if (t == 0)
             {
                 vifsl_pw(0) = 0.0;
@@ -364,14 +432,14 @@ int main()
 
         for (int j = 0; j < n; j++) // scanning all the nodes.
         {
-            if (j >= 0 && j < (n+1)/2 -1) // lower surface
+            if (j >= 0 && j < (n + 1) / 2 - 1) // lower surface
             {
                 double addition = 0.0;
-                for (int i = j; i < (n+1)/2 -1; i++) // scanning the control points..
+                for (int i = j; i < (n + 1) / 2 - 1; i++) // scanning the control points..
                 {
-                    panel_coeff_matrix_wake = influence_matrix(wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1),  x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset);
+                    panel_coeff_matrix_wake = influence_matrix(wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset);
                     viacp_rw = panel_coeff_matrix_wake * wake_panel_strength;
-                    viacp_b = velocity_bound_vortices(x_pp, y_pp, x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset, gamma_bound);
+                    viacp_b = velocity_bound_vortices(n,x_pp, y_pp, x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset, gamma_bound);
                     if (t == 0)
                     {
                         viacp_pw(0) = 0.0;
@@ -383,7 +451,7 @@ int main()
                         viacp_pw(1) = 0.0;
                         for (size_t k = 0; k < gamma_wake_strength.size(); k++) /* due to the previously shed vortices */
                         {
-                            viacp_pw = viacp_pw + velocity_induced_due_to_discrete_vortex(gamma_wake_strength[k], gamma_wake_x_location[k], gamma_wake_y_location[k],  x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset);
+                            viacp_pw = viacp_pw + velocity_induced_due_to_discrete_vortex(gamma_wake_strength[k], gamma_wake_x_location[k], gamma_wake_y_location[k], x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset);
                         }
                     }
                     unit_tangent_vector(0) = unit_tangent(i, 0); // tangent vector at ith control point
@@ -396,14 +464,14 @@ int main()
                 phi_airfoil_nodes(j) = phi_le - addition;
             }
 
-            if ((j > (n+1)/2 -1) && j < (n)) // upper panels
+            if ((j > (n + 1) / 2 - 1) && j < (n)) // upper panels
             {
                 double addition = 0.0;
-                for (int i =(n+1)/2 -1; i <= j-1; i++) // scanning the control points
+                for (int i = (n + 1) / 2 - 1; i <= j - 1; i++) // scanning the control points
                 {
                     panel_coeff_matrix_wake = influence_matrix(wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset);
                     viacp_rw = panel_coeff_matrix_wake * wake_panel_strength;
-                    viacp_b = velocity_bound_vortices(x_pp, y_pp,  x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset, gamma_bound);
+                    viacp_b = velocity_bound_vortices(n,x_pp, y_pp, x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset, gamma_bound);
                     if (t == 0)
                     {
                         viacp_pw(0) = 0.0;
@@ -415,7 +483,7 @@ int main()
                         viacp_pw(1) = 0.0;
                         for (size_t k = 0; k < gamma_wake_strength.size(); k++) /* due to the previously shed vortices */
                         {
-                            viacp_pw = viacp_pw + velocity_induced_due_to_discrete_vortex(gamma_wake_strength[k], gamma_wake_x_location[k], gamma_wake_y_location[k],  x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset);
+                            viacp_pw = viacp_pw + velocity_induced_due_to_discrete_vortex(gamma_wake_strength[k], gamma_wake_x_location[k], gamma_wake_y_location[k], x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset);
                         }
                     }
                     unit_tangent_vector(0) = unit_tangent(i, 0); // tangent vector at ith control point
@@ -425,7 +493,7 @@ int main()
                 }
                 phi_airfoil_nodes(j) = phi_le + addition;
             }
-            if (j == (n+1)/2 -1)
+            if (j == (n + 1) / 2 - 1)
             {
                 phi_airfoil_nodes(j) = phi_le;
             }
@@ -458,7 +526,7 @@ int main()
         {
             panel_coeff_matrix_wake = influence_matrix(wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset);
             viacp_rw = panel_coeff_matrix_wake * wake_panel_strength;
-            viacp_b = velocity_bound_vortices(x_pp, y_pp, x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset, gamma_bound);
+            viacp_b = velocity_bound_vortices(n,x_pp, y_pp, x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset, gamma_bound);
             if (iter == 0)
             {
                 viacp_pw(0) = 0.0;
@@ -473,10 +541,10 @@ int main()
                 {
                     viacp_pw = viacp_pw + velocity_induced_due_to_discrete_vortex(gamma_wake_strength[k], gamma_wake_x_location[k], gamma_wake_y_location[k], x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset);
                 }
-                dphi_dt(i) = ((phi_new(i) - phi_old(i)))/dt;
+                dphi_dt(i) = ((phi_new(i) - phi_old(i))) / dt;
             }
 
-            flow_vel = velocity_at_surface_of_the_body_inertial_frame(t, x_cp(i), y_cp(i));
+            flow_vel = velocity_at_surface_of_the_body_inertial_frame(Qinf, x_pitch, y_pitch, h0, h1, phi_h, alpha0, alpha1, phi_alpha, t, omega, x_cp(i), y_cp(i));
             vi = viacp_rw + viacp_b + viacp_pw + flow_vel;
             V = magnitude(vi);
             cp(i) = 1.0 - (V * V) / (Qinf * Qinf) - (2.0 / (Qinf * Qinf)) * (dphi_dt(i));
@@ -504,9 +572,9 @@ int main()
         }
 
         // myfile_load_cal << 2.0*t*Qinf/c  << "\t" << cn_tilda / cl_tilda_steady << "\t" << ca_tilda << endl; //uncomment this for sudden acceleration case.
-        myfile_load_cal << t/T << "\t" << cn_tilda << "\t" << ca_tilda << endl;
-        
-        xdata.push_back(t/T);
+        myfile_load_cal << t / T << "\t" << cn_tilda << "\t" << ca_tilda << endl;
+
+        xdata.push_back(t / T);
         ydata.push_back(cn_tilda);
 
         /*now we need to convect the panel as a discrete vortex for the next time step*/
@@ -553,19 +621,21 @@ int main()
                 }
                 // cout << shed_vel << endl;
                 /*velocity induced at jth wake point due to bound vortices*/
-                velocity = velocity_bound_vortices(x_pp, y_pp, gamma_wake_x_location[j], gamma_wake_y_location[j], gamma_bound);
+                velocity = velocity_bound_vortices(n,x_pp, y_pp, gamma_wake_x_location[j], gamma_wake_y_location[j], gamma_bound);
                 /*********** velocity induced at jth wake point due to wake panel ********/
                 panel_coeff_matrix_wake = influence_matrix(wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), gamma_wake_x_location[j], gamma_wake_y_location[j]);
                 vel_wake_point = panel_coeff_matrix_wake * wake_panel_strength;
                 /******** free wake ********/
-                if(wake == 0){
+                if (wake == 0)
+                {
                     gamma_wake_x_new_location[j] = gamma_wake_x_location[j] + (freestream(0) + shed_vel(0) + velocity(0) + vel_wake_point(0)) * dt;
                     gamma_wake_y_new_location[j] = gamma_wake_y_location[j] + (freestream(1) + shed_vel(1) + velocity(1) + vel_wake_point(1)) * dt;
                 }
-                else if(wake ==1){
-                 /******** prescribed wake ********/
-                gamma_wake_x_new_location[j] = gamma_wake_x_location[j] + (freestream(0)) * dt;
-                gamma_wake_y_new_location[j] = gamma_wake_y_location[j] + (freestream(1)) * dt;
+                else if (wake == 1)
+                {
+                    /******** prescribed wake ********/
+                    gamma_wake_x_new_location[j] = gamma_wake_x_location[j] + (freestream(0)) * dt;
+                    gamma_wake_y_new_location[j] = gamma_wake_y_location[j] + (freestream(1)) * dt;
                 }
             }
             for (int j = 0; j < size; j++)

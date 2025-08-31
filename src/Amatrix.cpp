@@ -1,7 +1,7 @@
-#include "constants.h"
 #include "Amatrix.h"
+#include <fstream>  // For file writing
 
-void Amatrix(MatrixXd &A, VectorXd &x_cp, VectorXd &y_cp, VectorXd &x_pp, VectorXd &y_pp)
+void Amatrix(int n, MatrixXd &A, VectorXd &x_cp, VectorXd &y_cp, VectorXd &x_pp, VectorXd &y_pp)
 {
    // ofstream myfile3("A_matrix_file.dat");
 
