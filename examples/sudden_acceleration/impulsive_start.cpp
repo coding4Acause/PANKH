@@ -21,7 +21,7 @@ const int trailing_edge_type = 2; //[1-closed,else-open]
 
 double c = 0.2;     // chord length
 double Qinf = 10.0; // magnitude of the freestream velocity in m/sec
-double dt = (16.0 * c) / (n * Qinf);
+double dt = (16.0 * c) / ((n-1) * Qinf);
 double tou_max = 50.0; // non-dimensional time
 double timemax = tou_max * c * 0.5 / Qinf;
 const int nsteps = timemax / dt; // max number of iterations or time steps.............
@@ -1309,3 +1309,4 @@ int main()
     }
     return 0;
 }
+
