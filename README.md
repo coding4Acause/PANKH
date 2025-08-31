@@ -147,7 +147,8 @@ PANKH  # the name of the local repository
 - │── /include      # Contains all .h header files     
 - │── README.md        
 - │── LICENSE 
-- │── /output_files    
+- │── /output_files  
+- │── input.json    # the input file 
 </details>
 
 <details>
@@ -181,7 +182,7 @@ icpx -o PANKH_solver src/*.cpp -Iinclude -std=c++11
 - Ensure that the required output directories exist before running the code. Refer to [`SETUP.md`](https://github.com/coding4Acause/PANKH/blob/main/SETUP.md) for details on directory structure.  
 - After compiling the code, run the solver using:
 ```bash
-./ PANKH_solver
+./PANKH_solver input.json
 ```
 ## API Documentation  
 
