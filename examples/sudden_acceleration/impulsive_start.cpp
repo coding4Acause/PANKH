@@ -6,14 +6,15 @@
 #include <Eigen/Eigen>
 #include <fstream>
 #include <cstdio>
+#include <chrono>
 
 using namespace Eigen;
 using namespace std;
 
 #define pi acos(-1)
-#define n 101 // the number of nodes[# panels=n-1]
+#define n 101 // the number of nodes [# panels=n-1]
 
-/*NACA 4 digit series airfoil parameters*/
+/* NACA 4 digit series airfoil parameters */
 const int ymc = 0;
 const int xmc = 0;
 const int tmax = 12;
@@ -240,7 +241,7 @@ VectorXd body_fixed_frame_to_inertial_frame(double bff_x_coord, double bff_y_coo
     VectorXd rot_point_bff(3);
 
     /*the coordinates of the point[in bff] about which rotation is taking place */
-    double xrot = c / 3.0;
+    double xrot = c / 4.0;
     double yrot = 0.0; /* This is zero because the point of rotation lies in the x axis of bff*/
     double zrot = 0.0;
 
@@ -673,7 +674,10 @@ void plot_ClvsTime(FILE *gnuplotPipe1, const vector<double> &xdata, const vector
 }
 
 int main()
-{
+{ 
+    // Start timer
+    auto start = chrono::high_resolution_clock::now();
+
     double t;
     double alpha_ins;
     // cout << freestream << endl;
@@ -786,7 +790,7 @@ int main()
     double delta_lwp, delta_theta_wp;
 
     ofstream myfile_load_cal, wake_last_time_step, wake_panel, wakefile, motionfile, pressurefile, gammafile, potentialfile, amatrixfile, bvectorfile, airfoilnormalfile;
-    myfile_load_cal.open("cl_cd_sudden_acc_n=101.dat");
+    myfile_load_cal.open("cl_cd_ours.dat");
     wake_last_time_step.open("wake at last time step.dat");
     wake_panel.open("output_files/wake panel at last time step.dat");
 
@@ -1185,6 +1189,11 @@ int main()
             vi = viacp_rw + viacp_b + viacp_pw + flow_vel;
             V = magnitude(vi);
             cp(i) = 1.0 - (V * V) / (Qinf * Qinf) - (2.0 / (Qinf * Qinf)) * (dphi_dt(i));
+            // Vector2d tangent_vec;
+            // tangent_vec(0) = unit_tangent(i, 0); // tangent vector at ith control point
+            // tangent_vec(1) = unit_tangent(i, 1);
+            //double tang_vel =  (dot(vi,tangent_vec));
+            //cp(i) = 1.0 - (tang_vel*tang_vel) / (Qinf * Qinf) - (2.0 / (Qinf * Qinf)) * (dphi_dt(i));
             // cp(i) = 1.0 - (V * V) / (Qinf * Qinf); [steady]
         }
         for (int i = 0; i < n - 1; i++)
@@ -1299,6 +1308,7 @@ int main()
         bvectorfile.close();
         airfoilnormalfile.close();
     }
+    myfile_load_cal.close();
     pclose(gnuplotPipe);
     pclose(gnuplotPipe1);
 
@@ -1307,6 +1317,11 @@ int main()
     {
         wake_last_time_step << gamma_wake_x_location[j] << "\t" << gamma_wake_y_location[j] << endl;
     }
+    // End timer
+    auto end = chrono::high_resolution_clock::now();
+
+    // Calculate duration in milliseconds
+    chrono::duration<double> duration_sec = end - start;
+    cout << "Execution time: " << duration_sec.count() << " seconds" << endl;
     return 0;
 }
-
