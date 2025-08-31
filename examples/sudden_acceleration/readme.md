@@ -1,28 +1,64 @@
-# Description of the Code for Sudden Acceleration (Impulsive Start) of an Airfoil
+# Impulsive Start: Sudden Acceleration of an Airfoil
 
-The code `impulsive_start.cpp`, located in this directory, is designed for the sudden acceleration case, which is a special scenario of the main solver `main.cpp`. Unlike `main.cpp`, which is a generalized implementation for plunge and pitching kinematics, this version is standalone and not separated into .cpp and .h files.
+The code `impulsive_start.cpp`, located in this directory, is designed for simulating the **sudden acceleration** (impulsive start) of an airfoil in a quiescent fluid. This is a **special case** of the more general solver implemented in `main.cpp`, which handles pitch and plunge motions.
 
-At **t = 0**, the airfoil is at a fixed angle of attack, immersed in a quiescent fluid. The moment the simulation starts, the freestream suddenly attains a velocity parallel to the x-axis of the inertial frame.
-
----
- # Code Overview
-
-- This code follows the same structure as the main solver used for the pitch-plunge case, with a few key differences:
-  - The functions `h_instantaneous()` and `h_dot_instantaneous()` return a zero vector, as there is no plunging motion.
-  - `alpha_instantaneous()` returns a constant angle of attack, since the airfoil does not pitch.
-  - `alpha_dot_instantaneous()` returns zero, as there is no angular velocity.
-- Before time loop starts, ***steady state*** calculations are performed, and lift is evaluated using **Kutta-Joukowsky** theorem and also using **pressure integration** around the airfoil surface.
-- When the user runs the code, real-time plots of the wake evolution and lift forces are displayed using Gnuplot in the background. This feature is also present in the main solver.
+Unlike `main.cpp`, this version is **standalone** and not separated into `.cpp` and `.h` files, allowing easier readability and compilation for this specific scenario.
 
 ---
 
-# Important guidlines
+## ✨ Problem Description
 
-- To run this code, ensure that:
+At **t = 0**, the airfoil is at a **fixed angle of attack** (e.g., 5°) in a **stationary fluid**. As the simulation begins, the **freestream velocity** is suddenly set to a constant value, simulating an **impulsive start** parallel to the x-axis of the inertial frame.
 
-  - The Eigen library is installed (for matrix computations).
+---
 
-  - Gnuplot is available (for real-time visualization).
+## 🧠 Code Overview
 
-- Detailed installation instructions are provided in the prerequisites section of the main
-[`README.md`](https://github.com/coding4Acause/2d_UnsteadyVortexPanel/blob/main/README.md) 
+This code follows the same numerical framework as the main solver (`main.cpp`) but with the following simplifications:
+
+- ✅ `h_instantaneous()` and `h_dot_instantaneous()` return zero vectors — there is **no plunge**.
+- ✅ `alpha_instantaneous()` returns a constant angle — the airfoil **does not pitch**.
+- ✅ `alpha_dot_instantaneous()` returns zero — there is **no angular velocity**.
+- ✅ Before the unsteady time loop begins, **steady-state calculations** are performed:
+  - Lift is evaluated using:
+    - **Kutta–Joukowsky theorem**
+    - **Pressure integration**
+- ✅ Real-time plotting of:
+  - Wake evolution
+  - Lift force (via GNUplot)
+
+---
+
+## 🧪 Test Case Setup
+
+- **Airfoil**: NACA 0012 (symmetric)
+- **Angle of Attack**: 5 degrees
+- **Initial Condition**: Quiescent fluid at $(t <= 0)$
+- **Freestream Velocity**: $Q_\infty=10\,m/s$
+- **Execution Time**: ~**23.31 seconds** for the complete simulation
+- ✅ The code displays the **total computational time** upon completion.
+
+### 📊 Validation & Publication
+
+The lift and drag coefficient plots (Cl and Cd) from this test case are included in this repository and were used in one of our [publications](https://www.researchgate.net/profile/Rohit-Chowdhury-5/publication/393158131_Development_of_an_unsteady_vortex_panel_method_for_a_flapping_airfoil/links/68623dae92697d42903bdee0/Development-of-an-unsteady-vortex-panel-method-for-a-flapping-airfoil.pdf).
+
+---
+
+## ⚙️ Requirements
+
+To compile and run the code, ensure the following are installed:
+
+### ➤ Dependencies
+- [Eigen](https://eigen.tuxfamily.org/) — for linear algebra operations
+- [Gnuplot](http://www.gnuplot.info/) — for real-time visualizations
+- For complete dependencies guidline see [README.md](https://github.com/coding4Acause/PANKH/blob/main/README.md)
+
+---
+
+## 🚀 Running the Code
+
+From terminal:
+
+```bash
+g++ impulsive_start.cpp -o impulsive_start
+./impulsive_start
