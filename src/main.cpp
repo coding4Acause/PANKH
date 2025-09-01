@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
     int nsteps = input["simulation"]["nsteps"];
     int z = input["simulation"]["z"];
     
-    double phi_alpha=(90.0*phi_h)*DEG2RAD;
+    double phi_alpha=(90.0+phi_h)*DEG2RAD;
     double omega =(2.0*k*Qinf)/c;
     double T = 2.0*pi/omega;
     double dt = T / nsteps;    // time increment
