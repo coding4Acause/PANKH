@@ -1,0 +1,43 @@
+
+
+```yaml
+name: PANKH CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y g++ libeigen3-dev gnuplot
+        wget https://github.com/nlohmann/json/releases/download/v3.11.3/json.hpp -O include/json.hpp
+
+    - name: Download Catch2
+      run: |
+        wget https://github.com/catchorg/Catch2/releases/download/v3.4.0/catch.hpp -O include/catch.hpp
+
+    - name: Compile and run tests
+      run: |
+        g++ -std=c++17 -Iinclude -I/usr/include/eigen3 tests/test_geometry.cpp src/geometry.cpp src/VectorOperations.cpp -o tests/test_geometry
+        g++ -std=c++17 -Iinclude -I/usr/include/eigen3 tests/test_kinematics.cpp src/kinematics.cpp src/MotionParameters.cpp src/VectorOperations.cpp src/constants.cpp -o tests/test_kinematics
+        g++ -std=c++17 -Iinclude -I/usr/include/eigen3 tests/test_velocity.cpp src/velocity.cpp src/VectorOperations.cpp src/MotionParameters.cpp src/constants.cpp -o tests/test_velocity
+        g++ -std=c++17 -Iinclude -I/usr/include/eigen3 tests/test_influencematrix.cpp src/InfluenceMatrix.cpp src/VectorOperations.cpp src/geometry.cpp -o tests/test_influencematrix
+        g++ -std=c++17 -Iinclude -I/usr/include/eigen3 tests/test_newtonraphson.cpp src/NewtonRaphsonNonLinear.cpp src/VectorOperations.cpp src/geometry.cpp src/velocity.cpp src/MotionParameters.cpp src/constants.cpp -o tests/test_newtonraphson
+        ./tests/test_geometry
+        ./tests/test_kinematics
+        ./tests/test_velocity
+        ./tests/test_influencematrix
+        ./tests/test_newtonraphson
+```
+
