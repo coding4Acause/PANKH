@@ -30,5 +30,6 @@ jobs:
 
       - name: 🧪 Compile and run test
         run: |
-          g++ -o test_exec tests/test.cpp -std=c++11
+          g++ -o test_exec tests/test.cpp -Iinclude -I/usr/include/eigen3 -std=c++11
           ./test_exec
+
