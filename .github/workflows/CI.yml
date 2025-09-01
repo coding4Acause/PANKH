@@ -1,43 +1,29 @@
+name: CI
 
-
-```yaml
-name: PANKH CI
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - name:  Checkout repository
+      uses: actions/checkout@v3
 
-    - name: Install dependencies
+    - name:  Install dependencies (Intel oneAPI or use g++)
       run: |
-        sudo apt-get update
-        sudo apt-get install -y g++ libeigen3-dev gnuplot
-        wget https://github.com/nlohmann/json/releases/download/v3.11.3/json.hpp -O include/json.hpp
+        sudo apt update
+        sudo apt install -y g++     
 
-    - name: Download Catch2
+    - name:  Compile the main solver
       run: |
-        wget https://github.com/catchorg/Catch2/releases/download/v3.4.0/catch.hpp -O include/catch.hpp
+        mkdir -p output_files
+        g++ -o PANKH_solver src/*.cpp -Iinclude -std=c++11
 
-    - name: Compile and run tests
+    - name:  Compile the test
       run: |
-        g++ -std=c++17 -Iinclude -I/usr/include/eigen3 tests/test_geometry.cpp src/geometry.cpp src/VectorOperations.cpp -o tests/test_geometry
-        g++ -std=c++17 -Iinclude -I/usr/include/eigen3 tests/test_kinematics.cpp src/kinematics.cpp src/MotionParameters.cpp src/VectorOperations.cpp src/constants.cpp -o tests/test_kinematics
-        g++ -std=c++17 -Iinclude -I/usr/include/eigen3 tests/test_velocity.cpp src/velocity.cpp src/VectorOperations.cpp src/MotionParameters.cpp src/constants.cpp -o tests/test_velocity
-        g++ -std=c++17 -Iinclude -I/usr/include/eigen3 tests/test_influencematrix.cpp src/InfluenceMatrix.cpp src/VectorOperations.cpp src/geometry.cpp -o tests/test_influencematrix
-        g++ -std=c++17 -Iinclude -I/usr/include/eigen3 tests/test_newtonraphson.cpp src/NewtonRaphsonNonLinear.cpp src/VectorOperations.cpp src/geometry.cpp src/velocity.cpp src/MotionParameters.cpp src/constants.cpp -o tests/test_newtonraphson
-        ./tests/test_geometry
-        ./tests/test_kinematics
-        ./tests/test_velocity
-        ./tests/test_influencematrix
-        ./tests/test_newtonraphson
-```
+        g++ -o tests/test tests/test.cpp -std=c++11
 
+    - name:  Run the test
+      run: |
+        ./tests/test
