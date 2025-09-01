@@ -1,4 +1,4 @@
-name: CI
+name: Build and Test
 
 on: [push, pull_request]
 
@@ -7,23 +7,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name:  Checkout repository
-      uses: actions/checkout@v3
+      - name: ✅ Checkout repository
+        uses: actions/checkout@v3
 
-    - name:  Install dependencies (Intel oneAPI or use g++)
-      run: |
-        sudo apt update
-        sudo apt install -y g++     
+      - name: 📦 Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ wget unzip
 
-    - name:  Compile the main solver
-      run: |
-        mkdir -p output_files
-        g++ -o PANKH_solver src/*.cpp -Iinclude -std=c++11
+      - name: 📥 Download Eigen
+        run: |
+          wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
+          unzip eigen-3.4.0.zip
+          mv eigen-3.4.0 eigen
 
-    - name:  Compile the test
-      run: |
-        g++ -o tests/test tests/test.cpp -std=c++11
+      - name: 📁 Create output directory
+        run: mkdir -p output_files
 
-    - name:  Run the test
-      run: |
-        ./tests/test
+      - name: ⚙️ Compile main solver
+        run: |
+          g++ -o PANKH_solver src/*.cpp -Iinclude -Ieigen -std=c++11
+
+      - name: 🧪 Compile and run test
+        run: |
+          g++ -o test_exec tests/test.cpp -std=c++11
+          ./test_exec
