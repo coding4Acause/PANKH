@@ -61,8 +61,9 @@
     "wake": 0,
     "tolerance": 1e-6,
     "epsilon": 1e-8,
-    "ncycles": 8,
+    "ncycles": 1,
     "nsteps": 40,
     "z": 200
   }
 }
+
