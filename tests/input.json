@@ -1,0 +1,68 @@
+{
+  "__geometry_explain": {
+    "n": "Number of nodes along the airfoil surface (n-1 panels) [It can be even or odd]",
+    "ymc": "1st digit of NACA 4-digit series (camber percentage)",
+    "xmc": "2nd digit of NACA 4-digit series (location of max camber)",
+    "tmax": "Last two digits of NACA 4-digit series (thickness percentage)",
+    "trailing_edge_type": "1 = open trailing edge, else closed",
+    "c": "Chord length of the airfoil [m]"
+  },
+  "geometry": {
+    "n": 101,
+    "c": 0.1,
+    "ymc": 0.0,
+    "xmc": 0.0,
+    "tmax": 12.0,
+    "trailing_edge_type": 2
+  },
+  "__flow_explain": {
+    "rho": "Fluid density [kg/m^3]",
+    "mu": "Dynamic viscosity [Pa.s]",
+    "Re": "Reynolds number (dimensionless)",
+    "Uinf": "Freestream X-velocity [optional: null means auto-compute from Re]",
+    "Vinf": "Freestream Y-velocity (usually 0)"
+  },
+  "flow": {
+    "rho": 998.2,
+    "mu": 0.0010016,
+    "Re": 40000.0,
+    "Qinf": null,
+    "Vinf": 0.0
+  },
+  "__motion_explain": {
+    "k": "Reduced frequency (k = omega * c / (2 * Uinf))",
+    "h1": "Amplitude of plunge motion [m]",
+    "h0": "Mean plunge offset [m]",
+    "alpha1": "pitch amplitude angle in degrees",
+    "alpha0": "Mean pitch angle in degrees",
+    "phi_h": "Plunge phase angle in degrees",
+    "x_pitch": "pitching axis x coord",
+    "y_pitch": "pitching axis y coord"
+  },
+  "motion": {
+    "k": 1.2,
+    "h1": null,
+    "h0": 0.0,
+    "alpha1": null,
+    "alpha0": 0.0,
+    "phi_h": 0.0,
+    "x_pitch": null,
+    "y_pitch": null
+  },
+  "__simulation_explain": {
+    "wake": "0 = free wake, 1 = prescribed wake",
+    "tolerance": "Convergence tolerance for Newton iteration",
+    "epsilon": "Small number for perturbation / finite differences",
+    "ncycles": "Number of oscillation cycles to simulate",
+    "nsteps": "Number of time steps per cycle",
+    "z": "Number of points for stagnation streamline integration"
+  },
+  "simulation": {
+    "wake": 0,
+    "tolerance": 1e-6,
+    "epsilon": 1e-8,
+    "ncycles": 8,
+    "nsteps": 40,
+    "z": 200
+  }
+}
