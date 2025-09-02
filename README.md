@@ -1,4 +1,14 @@
-# PANKH: A potential flow solver for hovering airfoils
+# PANKH: A Potential Flow Solver for Hovering Airfoils
+
+[![License](https://img.shields.io/github/license/coding4Acause/PANKH?color=blue)](LICENSE)
+![Latest Release](https://img.shields.io/github/v/release/coding4Acause/PANKH?style=flat-square)
+![Repo Size](https://img.shields.io/github/repo-size/coding4Acause/PANKH?color=blue)
+![C++](https://img.shields.io/badge/C%2B%2B-11-blue)
+![Dependencies](https://img.shields.io/badge/Dependencies-Eigen%2C%20Gnuplot-orange)
+![GitHub issues](https://img.shields.io/github/issues/coding4Acause/PANKH)
+![GitHub stars](https://img.shields.io/github/stars/coding4Acause/PANKH?style=social)
+![Last Commit](https://img.shields.io/github/last-commit/coding4Acause/PANKH)
+[![CI](https://github.com/coding4Acause/PANKH/actions/workflows/CI.yml/badge.svg)](https://github.com/coding4Acause/PANKH/actions/workflows/CI.yml)
 
 ## Description
 This project implements **PANKH** (Panel Analysis of uNsteady Kinematics of Hovering airfoils), a solver designed to study the aerodynamics of flapping foils. PANKH is a **low-fidelity solver** that solves the **Laplace equation** to determine the velocity distribution in the flow field. It enforces the **Neumann boundary condition** to satisfy the **no-penetration condition** (zero normal flux) on the airfoil surface.   The **unsteady Bernoulli equation** is then applied to compute the pressure difference across the airfoil, enabling the calculation of aerodynamic loads.
