@@ -1,0 +1,7 @@
+<map id="detail::exception" name="detail::exception">
+<area shape="rect" id="node3" href="$classdetail_1_1invalid__iterator.html" title="exception indicating errors with iterators " alt="" coords="347,5,513,32"/>
+<area shape="rect" id="node4" href="$classdetail_1_1other__error.html" title="exception indicating other library errors " alt="" coords="361,56,499,83"/>
+<area shape="rect" id="node5" href="$classdetail_1_1out__of__range.html" title="exception indicating access out of the defined range " alt="" coords="354,107,506,133"/>
+<area shape="rect" id="node6" href="$classdetail_1_1parse__error.html" title="exception indicating a parse error " alt="" coords="359,157,501,184"/>
+<area shape="rect" id="node7" href="$classdetail_1_1type__error.html" title="exception indicating executing a member function with a wrong type " alt="" coords="363,208,497,235"/>
+</map>
