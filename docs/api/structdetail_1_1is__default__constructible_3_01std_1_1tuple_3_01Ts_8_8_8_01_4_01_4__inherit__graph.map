@@ -1,4 +1,0 @@
-<map id="detail::is_default_constructible&lt; std::tuple&lt; Ts... &gt; &gt;" name="detail::is_default_constructible&lt; std::tuple&lt; Ts... &gt; &gt;">
-<area shape="rect" id="node4" href="$structdetail_1_1is__constructible_3_01std_1_1tuple_3_01Ts_8_8_8_01_4_01_4.html" title="detail::is_constructible\l\&lt; std::tuple\&lt; Ts... \&gt; \&gt;" alt="" coords="17,288,186,329"/>
-<area shape="rect" id="node2" href="$structdetail_1_1conjunction.html" title="detail::conjunction\l\&lt; is_default_constructible\l\&lt; Ts \&gt;... \&gt;" alt="" coords="5,80,197,136"/>
-</map>

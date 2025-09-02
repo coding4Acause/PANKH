@@ -1,8 +1,0 @@
-<map id="include/MotionParameters.h" name="include/MotionParameters.h">
-<area shape="rect" id="node2" href="$main_8cpp.html" title="src/main.cpp" alt="" coords="69,229,174,256"/>
-<area shape="rect" id="node3" href="$MotionParameters_8cpp.html" title="src/MotionParameters.cpp" alt="" coords="22,80,213,107"/>
-<area shape="rect" id="node4" href="$kinematics_8h.html" title="Contains functions for transforming coordinates and computing velocity in inertial and body&#45;fixed fra..." alt="" coords="237,80,395,107"/>
-<area shape="rect" id="node5" href="$kinematics_8cpp.html" title="src/kinematics.cpp" alt="" coords="159,155,303,181"/>
-<area shape="rect" id="node6" href="$geometry_8h.html" title="include/geometry.h" alt="" coords="327,155,473,181"/>
-<area shape="rect" id="node7" href="$geometry_8cpp.html" title="src/geometry.cpp" alt="" coords="333,229,467,256"/>
-</map>
