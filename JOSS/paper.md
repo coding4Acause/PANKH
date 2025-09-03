@@ -6,6 +6,7 @@ tags:
   - Vortex Panel
   - Kutta Condition
   - Kelvin Circulation Theorem
+  - Flapping wings 
 authors:
   - name: Rohit Chowdhury
     orcid: 0000-0001-7935-7907
@@ -28,13 +29,15 @@ Analyzing the aerodynamics of unsteady airfoils is vital for decoding the flight
 
 We introduce PANKH **(Panel Analysis of uNsteady Kinematics of Hovering airfoils)**, an open-source C++ tool that employs the unsteady vortex panel method to evaluate aerodynamic forces on airfoils in arbitrary motion. Its flexible, modular design enables users to specify custom kinematic patterns, ideal for exploring bio-inspired flapping flight and gust responses.
 
-The solver’s source code, validation examples, and documentation are hosted on GitHub, guaranteeing ease of access and replicability. Upcoming enhancements might feature broader input capabilities, refined wake modeling approaches, and the integration of alternative singularity distributions.
+The solver’s source code, validation examples, and comprehensive Doxygen-generated API documentation are hosted on GitHub, ensuring accessibility and reproducibility. Future enhancements may include expanded input capabilities, improved wake modeling techniques for more accurate unsteady flow prediction, and the integration of viscous effects along with two-way fluid–structure interaction (FSI) to simulate flexible airfoils and their coupling with the flow in a strongly coupled manner.
 
 # Statement of Need
 
-For low-speed aerodynamic applications, where viscous effects are primarily confined to thin boundary layers and wakes, potential flow solvers provide a computationally efficient alternative to high-fidelity CFD. These solvers approximate the flow as inviscid, incompressible, and irrotational, reducing complexity while still offering accurate lift estimations. By solving Laplace’s equation with appropriate boundary conditions, potential flow methods enable rapid aerodynamic analysis, making them particularly useful for preliminary design, scaling studies, and parametric investigations. Despite their advantages, open-source tools for unsteady potential flow analysis remain scarce. While [XFOIL](https://web.mit.edu/drela/Public/web/xfoil/), developed by Mark Drela, is a widely used tool for steady-state airfoil aerodynamics, it lacks the capability to handle unsteady effects. Existing research codes for unsteady vortex panel methods are often inaccessible, undocumented, or not actively maintained.
+For low-speed aerodynamic applications, where viscous effects are predominantly confined to thin boundary layers and wakes, potential flow solvers offer a computationally efficient alternative to high-fidelity computational fluid dynamics (CFD) and experimental approaches. High-fidelity CFD simulations, executed on high-performance computing (HPC) clusters comprising multiple nodes and cores, often demand days of runtime due to their intensive computational requirements and parallel processing across distributed architectures. Similarly, experimental methods require months to years for designing setups, procuring flow visualization equipment, and conducting tests. In contrast, PANKH, a modular C++ based open-source solver, delivers accurate aerodynamic load estimations within minutes on standard single-core systems, making it ideal for rapid prototyping and analysis. 
 
-To address this gap, we introduce PANKH, an open-source unsteady vortex panel solver designed to compute aerodynamic loads for airfoils undergoing arbitrary motion, such as pitching, plunging, and sudden acceleration. By leveraging a modular implementation, PANKH ensures computational efficiency while enabling users to explore unsteady aerodynamic phenomena with greater accessibility.
+Low-to-medium fidelity solvers like PANKH solve Laplace’s equation to model inviscid, incompressible, and irrotational flows, minimizing computational complexity while delivering precise lift estimations for aerodynamic analysis. By solving Laplace’s equation with appropriate boundary conditions, PANKH enable rapid aerodynamic analysis, making them particularly useful for preliminary design, scaling studies, and parametric investigations. Despite their advantages, open-source tools for unsteady potential flow analysis remain scarce. Established tools like [XFOIL](https://web.mit.edu/drela/Public/web/xfoil/), developed by Mark Drela, NASA's FoilSIM III, JavaFoil are tailored for steady-state aerodynamcis and lack the capability to address unsteady phenomena. Existing research codes for unsteady vortex panel methods are often proprietary, poorly documented, or no longer maintained. In contrast, PANKH is purpose-built for the unsteady aerodynamics of hovering airfoils, offering advanced features tailored for applications such as fixed-wing aircraft, flapping-wing micro-air vehicles (MAVs), ornithopters, and hovering rotorcraft. The software repository includes  validation cases comparing PANKH's results with experimental studies by [@anderson1998oscillating] and [@floryan2017scaling]. For three-dimensional wing design, understanding two-dimensional cross-sectional properties through airfoil analysis is critical for selecting optimal shapes. In real-world applications, PANKH holds significant potential for the aviation industry in its current form, with enhanced applicability when integrated with structural solvers to enable strongly coupled fluid-structure interaction analyses. Additionally, PANKH can serve as an effective tool for classroom visualizations, owing to its straightforward, modular, and procedural backend, which provides substantial flexibility for simulating diverse kinematic patterns.
+
+To address this gap, we present PANKH, an open-source unsteady vortex panel solver designed to compute aerodynamic loads for airfoils undergoing arbitrary motion, such as pitching, plunging, and sudden acceleration. By leveraging a modular implementation, PANKH ensures computational efficiency while enabling users to explore unsteady aerodynamic phenomena with greater accessibility.
 
 # Methodology
 
@@ -50,7 +53,7 @@ $$
 $$
 The total number of unknowns in the system is $n+1$:
  1) $n$ bound vortex strengths $\gamma_i\,(1 \leq i \leq n)$ on the airfoil.
- 2) $\gamma_{wp}$, the strength of the latest shed wake panel. [@vezza1985method,@basu_1978]
+ 2) $\gamma_{wp}$, the strength of the latest shed wake panel. For additional methodological details, refer to [@vezza1985method] and [@basu_1978].
  
 As illustrated in **Figure 1**, the solver employs a *piecewise linearly varying vortex distribution* on the airfoil surface, while in the wake, a constant-strength vortex panel is shed from the trailing edge at each time step. These wake vortices are then convected with the local velocity field and influence the induced velocity at subsequent time steps.
 
