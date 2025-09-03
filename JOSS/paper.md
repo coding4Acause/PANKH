@@ -1,12 +1,12 @@
 ---
 title: 'PANKH: An unsteady potential flow solver for hovering airfoils'
 tags:
-  - Unsteady aerodynamics
+  - Unsteady Aerodynamics
   - Potential Flows
   - Vortex Panel
   - Kutta Condition
   - Kelvin Circulation Theorem
-  - Flapping wings 
+  - Flapping Wings 
 authors:
   - name: Rohit Chowdhury
     orcid: 0000-0001-7935-7907
@@ -25,7 +25,7 @@ bibliography: paper.bib
 ---
 
 # Summary
-Analyzing the aerodynamics of unsteady airfoils is vital for decoding the flight dynamics of birds, insects, fixed-wing aircrafts and micro air vehicles (MAVs). Although computational fluid dynamics (CFD) delivers in-depth results, lower-fidelity approaches like potential flow solvers offer significant value due to their speed and capacity to model essential aerodynamic effects.
+Analyzing the aerodynamics of unsteady airfoils is essential for understanding the performance of wind turbine blades, helicopter rotors, and the flight dynamics of birds, insects, fixed-wing aircraft, and micro air vehicles (MAVs). While computational fluid dynamics (CFD) offers detailed and high-fidelity results, potential flow solvers provide a faster and more accessible alternative that still captures key aerodynamic phenomena. These include time-resolved pressure distribution, unsteady lift generation, thrust prediction, power consumption analysis, and estimation of propulsive efficiency. The use of free-wake modeling further enables these solvers to capture critical unsteady effects such as vortex shedding and wake-induced flow interactions.
 
 We introduce PANKH **(Panel Analysis of uNsteady Kinematics of Hovering airfoils)**, an open-source C++ tool that employs the unsteady vortex panel method to evaluate aerodynamic forces on airfoils in arbitrary motion. Its flexible, modular design enables users to specify custom kinematic patterns, ideal for exploring bio-inspired flapping flight and gust responses.
 
@@ -73,7 +73,7 @@ $$
 $$
 
 #### Kelvin’s Circulation Theorem
-For unsteady flows, the motion of the airfoil causes wake formation. The reason for wake formation can be explained by surrounding the airfoil by a sufficiently large contour, and noting that only conservative forces, such are pressure act on the contour. [@katz2001low] Then Kelvin’s theorem states that the total circulation in the contour remains constant, i.e., 
+For unsteady flows, the motion of the airfoil causes wake formation. The reason for wake formation can be explained by surrounding the airfoil by a sufficiently large contour, and noting that only conservative forces, such are pressure act on the contour [@katz2001low]. Then Kelvin’s theorem states that the total circulation in the contour remains constant, i.e., 
 
 $$
 \frac{\mathrm{D}\Gamma}{\mathrm{D}t}= \frac{\mathrm{D}}{\mathrm{D}t}\left(\Gamma_{\text{airfoil}}+\Gamma_{\text{wake}}\right)=0
