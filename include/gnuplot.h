@@ -11,9 +11,9 @@ using namespace Eigen;
 void plot_wake(FILE *gnuplotPipe, const vector<double> &gamma_wake_x_location, 
                const vector<double> &gamma_wake_y_location, double wake_x1, 
                double wake_y1, double wake_x2, double wake_y2, 
-               const VectorXd &x_pp, const VectorXd &y_pp);
+               const VectorXd &x_pp, const VectorXd &y_pp, const string &terminal_type);
 
 void plot_ClvsTime(FILE *gnuplotPipe1, const vector<double> &xdata, 
-                   const vector<double> &ydata, int ncycles);
+                   const vector<double> &ydata, int ncycles, const string &terminal_type);
 
 #endif // GNUPLOT_H

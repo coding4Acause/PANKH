@@ -55,7 +55,8 @@
     "epsilon": "Small number for perturbation / finite differences",
     "ncycles": "Number of oscillation cycles to simulate",
     "nsteps": "Number of time steps per cycle",
-    "z": "Number of points for stagnation streamline integration"
+    "z": "Number of points for stagnation streamline integration",
+    "gnuplot_terminal": "Type of Gnuplot terminal for live visualization     ('x11' for Linux, 'qt' for macOS/Windows)"  
   },
   "simulation": {
     "wake": 0,
@@ -63,7 +64,8 @@
     "epsilon": 1e-8,
     "ncycles": 1,
     "nsteps": 40,
-    "z": 200
+    "z": 200,
+    "gnuplot_terminal": "x11"
   }
 }
 

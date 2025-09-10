@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
     int ncycles = input["simulation"]["ncycles"];
     int nsteps = input["simulation"]["nsteps"];
     int z = input["simulation"]["z"];
+    string gnuplot_terminal = input["simulation"]["gnuplot_terminal"].get<std::string>();
     
     double phi_alpha=(90.0+phi_h)*DEG2RAD;
     double omega =(2.0*k*Qinf)/c;
@@ -588,8 +589,8 @@ int main(int argc, char *argv[])
         {
             wakefile << gamma_wake_x_location[k] << "\t" << gamma_wake_y_location[k] << endl;
         }
-        plot_wake(gnuplotPipe, gamma_wake_x_location, gamma_wake_y_location, wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), x_pp, y_pp);
-        plot_ClvsTime(gnuplotPipe1, xdata, ydata, ncycles);
+        plot_wake(gnuplotPipe, gamma_wake_x_location, gamma_wake_y_location, wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), x_pp, y_pp,gnuplot_terminal);
+        plot_ClvsTime(gnuplotPipe1, xdata, ydata, ncycles,gnuplot_terminal);
 
         /***  next task is to propagate the wake point vortices ***/
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

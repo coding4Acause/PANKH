@@ -1,12 +1,12 @@
 #include "gnuplot.h"
 
-void plot_wake(FILE *gnuplotPipe, const vector<double> &gamma_wake_x_location, const vector<double> &gamma_wake_y_location, double wake_x1, double wake_y1, double wake_x2, double wake_y2, const VectorXd &x_pp, const VectorXd &y_pp)
+void plot_wake(FILE *gnuplotPipe, const vector<double> &gamma_wake_x_location, const vector<double> &gamma_wake_y_location, double wake_x1, double wake_y1, double wake_x2, double wake_y2, const VectorXd &x_pp, const VectorXd &y_pp,const string &terminal_type)
 {
-    fprintf(gnuplotPipe, "set terminal x11\n");  // Ensure X11 is used
+    fprintf(gnuplotPipe, "set terminal %s\n", terminal_type.c_str());
     fprintf(gnuplotPipe, "set size ratio -1\n"); // Equal axis scaling
     fprintf(gnuplotPipe, "set key outside right\n"); 
 
-    fprintf(gnuplotPipe, "plot '-' with points pt 7 ps 1.0 lc rgb 'red', '-' with lines lw 3 lc rgb 'blue'\n");
+    fprintf(gnuplotPipe, "plot '-' title 'Wake Vortices' with points pt 7 ps 1.0 lc rgb 'red', '-' title 'Airfoil Surface' with lines lw 3 lc rgb 'blue'\n");
 
     // Plot wake vortices (Red points)
     fprintf(gnuplotPipe, "%lf %lf\n", wake_x1, wake_y1);
@@ -26,8 +26,9 @@ void plot_wake(FILE *gnuplotPipe, const vector<double> &gamma_wake_x_location, c
     fflush(gnuplotPipe);         // Update plot immediately
 }
 
-void plot_ClvsTime(FILE *gnuplotPipe1, const vector<double> &xdata, const vector<double> &ydata, int ncycles)
+void plot_ClvsTime(FILE *gnuplotPipe1, const vector<double> &xdata, const vector<double> &ydata, int ncycles,const string &terminal_type)
 {
+    fprintf(gnuplotPipe1, "set terminal %s\n", terminal_type.c_str());
     fprintf(gnuplotPipe1, "set grid\n");
     fprintf(gnuplotPipe1, "set title 'Evolution of lift coefficient with time'\n");
     fprintf(gnuplotPipe1, "set xlabel 't/T'\n");
@@ -35,7 +36,7 @@ void plot_ClvsTime(FILE *gnuplotPipe1, const vector<double> &xdata, const vector
 
     fprintf(gnuplotPipe1, "set xrange [0:%d]\n",ncycles);
 
-    fprintf(gnuplotPipe1, "set terminal x11\n"); // Ensure X11 is used
+    fprintf(gnuplotPipe1, "set terminal %s\n", terminal_type.c_str());
     fprintf(gnuplotPipe1, "plot '-' with lines lw 3 lc rgb 'green'\n");
 
     for (size_t i = 0; i < xdata.size(); i++)
