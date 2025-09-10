@@ -90,37 +90,9 @@ Before compiling and running the code, ensure the installation of the following 
 </details>
 
 <details>
-  <summary>Install Gnuplot (Required for real-time in-situ plotting)</summary>
-  
-  - **Gnuplot** is needed for real-time visualization of results.
-  - Install Gnuplot on Ubuntu:
-    ```bash
-    sudo apt install gnuplot
-    ```
-  - To test if Gnuplot is working, run:
-    ```bash
-    gnuplot
-    ```
-    If it opens a terminal, Gnuplot is installed correctly.
-</details>
+  <summary>Real-time / In-situ Visualization of Aerodynamic Forces and Vortex Shedding</summary>
 
-<details>
-  <summary>Install X11 (Required for Gnuplot visualization)</summary>
-  
-  - Install X11 support on Ubuntu:
-    ```bash
-    sudo apt install x11-apps
-    ```
-  - Verify installation:
-    ```bash
-    xeyes  # Should open a graphical window with moving eyes
-    ```
-  - You can also check the Gnuplot terminal type:
-    ```bash
-    gnuplot
-    set terminal
-    ```
-    If `x11` is missing, install **X11** as shown above.
+   Comprehensive platform-specific prerequisites, installation procedures, and verification protocols for enabling real-time visualization are detailed in [visualization_setup.md](Visualization_setup.md). This includes instructions for Gnuplot terminals, X11 support, and validation of plotting functionality across Linux, macOS, and Windows.
 </details>
   
 ### Getting the Source Code
@@ -189,23 +161,29 @@ icpx -o PANKH_solver src/*.cpp -Iinclude -std=c++11
 </details>
 
 ##  Usage
+<details><summary> Prepare the Input File </summary>
 
-1. **Prepare the Input File:**
    - Modify simulation parameters in the `input.json` file as per your requirements (e.g., freestream conditions, kinematic motion(e.g. pitch,plunge), total simulation time, airfoil geometry, panel discretization, etc.).
    - For parameters that are set to null in `input.json`, their values are automatically computed within the code during runtime. It is recommended to review the relevant section in `main.cpp` that handles JSON parsing for a complete understanding of how default values are derived and assigned.  
+</details>
 
-2. **Ensure Output Directories Exist:**
-   - The solver generates multiple output files (e.g., pressure coefficients, lift and drag coefficients, wake data). These are written to subdirectories under `output_files/`.
-   - If these directories do not already exist, refer to [`SETUP.md`](https://github.com/coding4Acause/PANKH/blob/main/SETUP.md) to create them or use the provided setup script.
+<details>
+  <summary>Ensure Output Directories Exist</summary>
+  
+  - The solver produces multiple output files, including **pressure coefficients**, **lift and drag coefficients**, and **wake data**. These files are written to the appropriate subdirectories under `output_files/`.
 
-3. **Run the Solver:**
+  - If the required directories are absent, consult [`SETUP.md`](https://github.com/coding4Acause/PANKH/blob/main/SETUP.md) for detailed instructions or execute the provided setup script to automatically generate the directory structure.
+</details>
+
+
+ <details><summary>Run the Solver</summary>
+
    After successful compilation, execute the solver from the terminal:
    ```bash
    ./PANKH_solver input.json
    ```
    > Note: The solver expects the `input.json` file as a command-line argument. Ensure this file exists in the same directory or provide the correct path.
-
----
+</details>
 
 ##  API Documentation
 
@@ -217,17 +195,16 @@ The source code has been extensively documented using **Doxygen-style comments**
 - Input/output descriptions
 - Hyperlinked navigation for easy access
 
-###  View Documentation Online
+<details><summary>View Documentation Online</summary>
 
-The generated API documentation is hosted using **GitHub Pages** and can be accessed at:
+ The generated API documentation is hosted using **GitHub Pages** and can be accessed at:
 
  **[https://coding4Acause.github.io/PANKH/](https://coding4Acause.github.io/PANKH/)**
 
 > This will open the `index.html` of the Doxygen-generated documentation directly in your browser.
+</details>
 
----
-
-###  Generate Locally (Optional)
+<details><summary> Generate Locally (Optional)</summary>
 
 If you want to regenerate the documentation on your system:
 
@@ -249,6 +226,8 @@ doxygen Doxyfile
 ```
 
 This will generate a folder (`docs/` or `docs/html/`) containing the full documentation suite.
+
+</details>
 
 ## License
 This project is licensed under the terms of the MIT License. See [License](https://github.com/coding4Acause/2d_UnsteadyVortexPanel/blob/main/LICENSE) for details.
