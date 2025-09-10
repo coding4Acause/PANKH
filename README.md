@@ -9,6 +9,7 @@
 ![GitHub stars](https://img.shields.io/github/stars/coding4Acause/PANKH?style=social)
 ![Last Commit](https://img.shields.io/github/last-commit/coding4Acause/PANKH)
 [![CI](https://github.com/coding4Acause/PANKH/actions/workflows/CI.yml/badge.svg)](https://github.com/coding4Acause/PANKH/actions/workflows/CI.yml)
+[![API Docs](https://img.shields.io/badge/API--Docs-Click%20Here-blue?style=flat-square)](https://coding4Acause.github.io/PANKH/)
 
 ## Description
 This project implements **PANKH** (Panel Analysis of uNsteady Kinematics of Hovering airfoils), a solver designed to study the aerodynamics of flapping foils. PANKH is a **low-fidelity solver** that solves the **Laplace equation** to determine the velocity distribution in the flow field. It enforces the **Neumann boundary condition** to satisfy the **no-penetration condition** (zero normal flux) on the airfoil surface.   The **unsteady Bernoulli equation** is then applied to compute the pressure difference across the airfoil, enabling the calculation of aerodynamic loads.
@@ -27,7 +28,7 @@ This solver is implemented in C++ and utilizes the **Eigen library** for efficie
 
 - **Flexible motion simulation** — the code can be easily modified to analyze various kinematic motions
 
-- **User-controlled wake modeling** – The `constants.cpp` file allows users to choose between prescribed wake and free wake analysis.
+- **User-controlled wake modeling** – The `input.json` file allows users to choose between prescribed wake and free wake analysis.
 
 - **Flexible panel discretization** – The code supports both *even* and *odd* numbers of panels with *cosine clustering* for improved resolution near the leading and trailing edges. For details, refer to the `nodal_coordinates_initial` function in `geometry.cpp`.
 
@@ -187,41 +188,67 @@ icpx -o PANKH_solver src/*.cpp -Iinclude -std=c++11
 ```
 </details>
 
-## Usage
-- Before compiling the code, modify the input parameters in `constants.cpp` as needed.
-- Ensure that the required output directories exist before running the code. Refer to [`SETUP.md`](https://github.com/coding4Acause/PANKH/blob/main/SETUP.md) for details on directory structure.  
-- After compiling the code, run the solver using:
-```bash
-./PANKH_solver input.json
-```
-## API Documentation  
+##  Usage
 
-### Generating Source Code Documentation with Doxygen  
-The source code is already documented using **Doxygen comments**, making it easy to generate **HTML-based** documentation.
+1. **Prepare the Input File:**
+   - Modify simulation parameters in the `input.json` file as per your requirements (e.g., freestream conditions, kinematic motion(e.g. pitch,plunge), total simulation time, airfoil geometry, panel discretization, etc.).
+   - For parameters that are set to null in `input.json`, their values are automatically computed within the code during runtime. It is recommended to review the relevant section in `main.cpp` that handles JSON parsing for a complete understanding of how default values are derived and assigned.  
 
-### Prerequisites (Install Doxygen and Graphviz)  
-Before running Doxygen, ensure the following dependencies are installed:
+2. **Ensure Output Directories Exist:**
+   - The solver generates multiple output files (e.g., pressure coefficients, lift and drag coefficients, wake data). These are written to subdirectories under `output_files/`.
+   - If these directories do not already exist, refer to [`SETUP.md`](https://github.com/coding4Acause/PANKH/blob/main/SETUP.md) to create them or use the provided setup script.
 
-- **Doxygen** (Required for generating documentation)  
-- **Graphviz** (Required for function call graphs in Doxygen)  
+3. **Run the Solver:**
+   After successful compilation, execute the solver from the terminal:
+   ```bash
+   ./PANKH_solver input.json
+   ```
+   > Note: The solver expects the `input.json` file as a command-line argument. Ensure this file exists in the same directory or provide the correct path.
 
-#### Install on Ubuntu  
+---
+
+##  API Documentation
+
+###  Overview
+
+The source code has been extensively documented using **Doxygen-style comments**, enabling automatic generation of API documentation in HTML format. This documentation includes:
+- Function descriptions
+- Call graphs and dependency trees
+- Input/output descriptions
+- Hyperlinked navigation for easy access
+
+###  View Documentation Online
+
+The generated API documentation is hosted using **GitHub Pages** and can be accessed at:
+
+ **[https://coding4Acause.github.io/PANKH/](https://coding4Acause.github.io/PANKH/)**
+
+> This will open the `index.html` of the Doxygen-generated documentation directly in your browser.
+
+---
+
+###  Generate Locally (Optional)
+
+If you want to regenerate the documentation on your system:
+
+#### 1. Install Required Tools:
 ```bash
 sudo apt install doxygen graphviz
 ```
-#### Verify Installation
+
+#### 2. Verify Installation:
+```bash
+doxygen -v   # Check Doxygen version
+dot -V       # Check Graphviz version
 ```
-doxygen -v   # Should print the installed Doxygen version
-dot -V       # Should print the installed Graphviz version
-```
-#### Navigate to local repository containing the Doxyfile
-```
-cd path/to/your/repository
-```
-#### Run Doxygen
-```
+
+#### 3. Run Doxygen:
+From the root of your repository (where the `Doxyfile` is located), run:
+```bash
 doxygen Doxyfile
 ```
+
+This will generate a folder (`docs/` or `docs/html/`) containing the full documentation suite.
 
 ## License
 This project is licensed under the terms of the MIT License. See [License](https://github.com/coding4Acause/2d_UnsteadyVortexPanel/blob/main/LICENSE) for details.
