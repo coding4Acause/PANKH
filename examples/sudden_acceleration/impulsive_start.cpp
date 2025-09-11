@@ -16,8 +16,6 @@ using namespace std;
 #define pi acos(-1)
 #define DEG2RAD pi / 180.0
 
-// Following parameters are always zero since in IMPUSLISVE MOTION case it is assumed that there is no pitching and plunging.
-
 VectorXd normalize_2d(VectorXd v)
 {
     double mag = sqrt(v(0) * v(0) + v(1) * v(1));
@@ -1309,4 +1307,5 @@ int main()
     chrono::duration<double> duration_sec = end - start;
     cout << "Execution time: " << duration_sec.count() << " seconds" << endl;
     return 0;
+
 }
