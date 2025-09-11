@@ -7,60 +7,34 @@
 #include <fstream>
 #include <cstdio>
 #include <chrono>
+#include "json.hpp"
 
+using json = nlohmann::json;
 using namespace Eigen;
 using namespace std;
 
 #define pi acos(-1)
-#define n 101 // the number of nodes [# panels=n-1]
+#define DEG2RAD pi / 180.0
 
-/* NACA 4 digit series airfoil parameters */
-const int ymc = 0;
-const int xmc = 0;
-const int tmax = 12;
-const int trailing_edge_type = 2; //[1-closed,else-open]
-
-double c = 0.2;     // chord length
-double Qinf = 10.0; // magnitude of the freestream velocity in m/sec
-double dt = (16.0 * c) / ((n-1) * Qinf);
-double tou_max = 50.0; // non-dimensional time
-double timemax = tou_max * c * 0.5 / Qinf;
-const int nsteps = timemax / dt; // max number of iterations or time steps.............
-
-int wakechoice = 0; //[0-free wake, 1-prescribed wake]
-
-/*In this problem we are rotating the airfoil by instantaneous angle of attack keeping the freestream direction parallel to X dirn.[INERTIAL FRAME]*/
-double Uinf = Qinf;
-double Vinf = 0.0;
-Vector2d freestream(Uinf, Vinf);
-
-// Motion parameters [needed for pitch/plunge cases]
-double k = 0.2;                                             // Reduced frequency
-double omega = (2.0 * k * Qinf) / c;                        // Angular Frequency of oscillation [rad/sec]
-double T = 2.0 * pi / omega;                                // Time Period of oscillation
-double h1 = 0.25 * c;                                       // Plunge amplitude
-double alpha1 = 15.0 * pi / 180.0 - atan2(2.0 * k * h1, c); // Pitch amplitude
-double h0 = 0.0;                                            // Mean plunge
-double alpha0 = 0.0 * pi / 180.0;                           // Mean pitch
-double phi_h = 0.0;                                         // Plunge phase
-double phi_alpha = (90.0 + phi_h) * pi / 180.0;             // Pitch phase
-
-// For newtonRaphson
-double tolerance = 1.e-5; // convergence criteria
-double epsilon = 1.e-8;   // increment
+// Following parameters are always zero since in IMPUSLISVE MOTION case it is assumed that there is no pitching and plunging.
 
 VectorXd normalize_2d(VectorXd v)
 {
-    double mag;
-    mag = sqrt(v(0) * v(0) + v(1) * v(1));
+    double mag = sqrt(v(0) * v(0) + v(1) * v(1));
+    if (mag < 1e-10)
+    { // Avoid division by zero
+        return VectorXd::Zero(2);
+    }
     v = v / mag;
     return v;
 }
-double magnitude(VectorXd a)
+double magnitude(const VectorXd &a)
 {
-    double mag;
-    mag = sqrt(a(0) * a(0) + a(1) * a(1));
-    return mag;
+    if (a.size() < 2)
+    {
+        throw invalid_argument("Vector must have at least 2 elements");
+    }
+    return sqrt(a(0) * a(0) + a(1) * a(1));
 }
 double dot(VectorXd a, VectorXd b)
 {
@@ -77,15 +51,13 @@ VectorXd cross(VectorXd a, VectorXd b)
     return cross_product;
 }
 
-/*this function returns the upper and lower coordinates (dimensionalised) of a NACA 4 digit series airfoil for any x/c. */
-MatrixXd geometry(double x_c)
+/* this function returns the upper and lower coordinates (dimensionalised) of a NACA 4 digit series airfoil for any x/c. */
+MatrixXd geometry(double x_c, double c, double q, double p, int trailing_edge_type, double t_m)
 {
 
     MatrixXd airfoil_points(3, 2);
-    double p, q, tm, yc, der_yc, t;
-    p = (ymc / 100.0); // p non dimensionalised ymc [p=ymc/c]
-    q = (xmc * 0.1);   // q non dimensionalised xmc [q=xmc/c]
-    tm = (tmax / 100.0);
+
+    double yc, der_yc, t;
 
     if (x_c <= q)
     {
@@ -97,13 +69,13 @@ MatrixXd geometry(double x_c)
         yc = (p * c * (2.0 * (1 - x_c) / (1 - q) - pow(((1 - x_c) / (1 - q)), 2.0)));
         der_yc = c * ((2.0 * p / (1.0 - q)) * (((1.0 - x_c) / (1.0 - q)) - 1.0));
     }
-    if (trailing_edge_type == 1.0) // 1 indicates open trailing edge
+    if (trailing_edge_type == 1) // 1 indicates open trailing edge
     {
-        t = c * (tm * (2.969 * sqrt(x_c) - 1.260 * (x_c)-3.516 * pow((x_c), 2) + 2.843 * pow((x_c), 3.0) - 1.015 * (pow((x_c), 4.0))));
+        t = c * (t_m * (2.969 * sqrt(x_c) - 1.260 * (x_c)-3.516 * pow((x_c), 2) + 2.843 * pow((x_c), 3.0) - 1.015 * (pow((x_c), 4.0))));
     }
     else
     {
-        t = c * (tm * (2.980 * sqrt(x_c) - 1.320 * (x_c)-3.286 * pow((x_c), 2) + 2.441 * pow((x_c), 3.0) - 0.815 * (pow((x_c), 4.0))));
+        t = c * (t_m * (2.980 * sqrt(x_c) - 1.320 * (x_c)-3.286 * pow((x_c), 2) + 2.441 * pow((x_c), 3.0) - 0.815 * (pow((x_c), 4.0))));
     }
     if (p == 0.0) //[SYMMETRIC AIRFOIL]
     {
@@ -126,15 +98,14 @@ MatrixXd geometry(double x_c)
     return airfoil_points;
 }
 /* this function basically discretizes the chord in a nonlinear way [COSINE CLUSTERING]*/
-
-void nodal_coordinates_initial(VectorXd &x0, VectorXd &y0)
+void nodal_coordinates_initial(int n, double c, double q, double p, int trailing_edge_type, double t_m, VectorXd &x0, VectorXd &y0) // this function basically discretizes the chord in a nonlinear way [COSINE CLUSTERING]
 {
     double theta;
     MatrixXd panel_points(3, 2);
     double x_nd, delta_theta;
     delta_theta = (2 * pi) / (n - 1);
     ofstream myfile;
-    myfile.open("naca_geometry.dat");
+    myfile.open("output_files/_time=0.dat");
 
     if (n % 2 == 0)
     { // even number of nodes
@@ -144,7 +115,7 @@ void nodal_coordinates_initial(VectorXd &x0, VectorXd &y0)
         {                                    // storing lower coordinates first
             theta = (i - 0.5) * delta_theta; // cosine clustering
             x_nd = 0.5 * (1 - cos(theta));
-            panel_points = geometry(x_nd);
+            panel_points = geometry(x_nd, c, q, p, trailing_edge_type, t_m);
             x0(n / 2 - i) = panel_points(1, 0); // x_lower
             y0(n / 2 - i) = panel_points(1, 1); // y_lower
         }
@@ -152,7 +123,7 @@ void nodal_coordinates_initial(VectorXd &x0, VectorXd &y0)
         {                                    // storing upper coordinates
             theta = (i - 0.5) * delta_theta; // cosine clustering
             x_nd = 0.5 * (1 - cos(theta));
-            panel_points = geometry(x_nd);
+            panel_points = geometry(x_nd, c, q, p, trailing_edge_type, t_m);
             x0(n / 2 + i - 1) = panel_points(0, 0); // x_upper
             y0(n / 2 + i - 1) = panel_points(0, 1); // y_upper
         }
@@ -167,13 +138,13 @@ void nodal_coordinates_initial(VectorXd &x0, VectorXd &y0)
         {                                  // lower coordinates
             theta = (i + 1) * delta_theta; // cosine clustering
             x_nd = 0.5 * (1 - cos(theta));
-            panel_points = geometry(x_nd);
+            panel_points = geometry(x_nd, c, q, p, trailing_edge_type, t_m);
             x0(np2 - 1 - i) = panel_points(1, 0); // x_lower
             y0(np2 - 1 - i) = panel_points(1, 1); // y_lower
         }
         // middle point
         x_nd = 0.5 * (1 - cos(0.0));
-        panel_points = geometry(x_nd);
+        panel_points = geometry(x_nd, c, q, p, trailing_edge_type, t_m);
         x0(np2) = panel_points(0, 0); // x_middle
         y0(np2) = panel_points(0, 1); // y_middle
 
@@ -181,7 +152,7 @@ void nodal_coordinates_initial(VectorXd &x0, VectorXd &y0)
         {                                  // upper coordinates
             theta = (i + 1) * delta_theta; // cosine clustering
             x_nd = 0.5 * (1 - cos(theta));
-            panel_points = geometry(x_nd);
+            panel_points = geometry(x_nd, c, q, p, trailing_edge_type, t_m);
             x0(np2 + 1 + i) = panel_points(0, 0); // x_upper
             y0(np2 + 1 + i) = panel_points(0, 1); // y_upper
         }
@@ -192,48 +163,10 @@ void nodal_coordinates_initial(VectorXd &x0, VectorXd &y0)
         myfile << x0(i) << "\t" << y0(i) << endl;
     }
 }
+
 /*******some generalised functions which gives motion of the body.These functions will be required to convert from bff to inertial frame or vice-versa*/
 
-/* Plunging motion function gives the coordinate of the geometry at any time instance because of the plunging motion */
-/* Plunging motion function gives the coordinate of the geometry at any time instance because of the plunging motion */
-VectorXd h_instantaneous(double t, double omega)
-{
-    VectorXd plunge(3);
-    double h = h1 * sin(omega * t + phi_h);
-    plunge(0) = 0.0;
-    // plunge(1) = -h;
-    plunge(1) = 0.0;
-    plunge(2) = 0.0;
-    return (plunge);
-}
-
-VectorXd h_dot_instantaneous(double t, double omega)
-{
-    VectorXd plunge_vel(3);
-    double h_dot = h1 * omega * cos(omega * t + phi_h);
-    plunge_vel(0) = 0.0;
-    // plunge_vel(1) = -h_dot;
-    plunge_vel(1) = 0.0;
-    plunge_vel(2) = 0.0;
-    return (plunge_vel);
-}
-/* function which returns the alpha at a corresponding time */
-double alpha_instantaneous(double t)
-{
-    double alpha;
-    // alpha = alpha0 + alpha1 * sin(omega * t + phi_alpha);
-    alpha = 5.0 * pi / 180.0;
-    return alpha;
-}
-/* function which returns the alpha at a corresponding time */
-double alpha_dot_instantaneous(double t)
-{
-    double alpha_dot;
-    alpha_dot = alpha1 * omega * cos(omega * t + phi_alpha);
-    return 0.0;
-}
-
-VectorXd body_fixed_frame_to_inertial_frame(double bff_x_coord, double bff_y_coord, double alpha, double t)
+VectorXd body_fixed_frame_to_inertial_frame(double x_pitch, double y_pitch, double alpha, double bff_x_coord, double bff_y_coord)
 {
     /*Generalsied case*/
 
@@ -241,8 +174,8 @@ VectorXd body_fixed_frame_to_inertial_frame(double bff_x_coord, double bff_y_coo
     VectorXd rot_point_bff(3);
 
     /*the coordinates of the point[in bff] about which rotation is taking place */
-    double xrot = c / 4.0;
-    double yrot = 0.0; /* This is zero because the point of rotation lies in the x axis of bff*/
+    double xrot = x_pitch;
+    double yrot = y_pitch; /* This is zero because the point of rotation lies in the x axis of bff*/
     double zrot = 0.0;
 
     rot_point_bff(0) = xrot;
@@ -267,14 +200,7 @@ VectorXd body_fixed_frame_to_inertial_frame(double bff_x_coord, double bff_y_coo
     R(2, 1) = 0.0;
     R(2, 2) = 1.0;
 
-    VectorXd translation(3);
-
-    VectorXd fm(3);
-    VectorXd pm(3);
-
-    pm = h_instantaneous(t, omega);
-
-    translation = pm;
+    VectorXd translation = VectorXd::Zero(3);
 
     ef = (R * bff) + translation + rot_point_bff;
 
@@ -285,7 +211,7 @@ VectorXd body_fixed_frame_to_inertial_frame(double bff_x_coord, double bff_y_coo
 
     return (earth_frame);
 }
-VectorXd velocity_at_surface_of_the_body_inertial_frame(double t, double point_x_coord, double point_y_coord) /*x_coord and ycoord are the point on the surface of the body in inertial frame*/
+VectorXd velocity_at_surface_of_the_body_inertial_frame(double Qinf, double x_pitch, double y_pitch, double point_x_coord, double point_y_coord) /*x_coord and ycoord are the point on the surface of the body in inertial frame*/
 {
     VectorXd freestream(3);
     /*ASSUMING THAT THERE IS A ONCOMING FLOW PARALLEL TO THE X AXIS OF THE INERTIAL FRAME */
@@ -303,7 +229,7 @@ VectorXd velocity_at_surface_of_the_body_inertial_frame(double t, double point_x
 
     /* Obtain the plunging velocity corresponding to the given time */
     VectorXd plunge_vel(3);
-    plunge_vel = h_dot_instantaneous(t, omega);
+    plunge_vel.setZero(); // in sudden acc. case no plunging
 
     /* Obtain the angular velocity corresponding to the given time at the desired point on the surface of the body */
     VectorXd rpos(3);
@@ -317,12 +243,11 @@ VectorXd velocity_at_surface_of_the_body_inertial_frame(double t, double point_x
     xc(2) = 0.0;
 
     VectorXd fm(3);
-    VectorXd pm(3);
 
-    pm = h_instantaneous(t, omega);
+    VectorXd pm = VectorXd::Zero(3);
 
-    rot_point_bff(0) = c / 3.0;
-    rot_point_bff(1) = 0.0;
+    rot_point_bff(0) = x_pitch;
+    rot_point_bff(1) = y_pitch;
     rot_point_bff(2) = 0.0;
 
     xf = pm + rot_point_bff;
@@ -330,7 +255,7 @@ VectorXd velocity_at_surface_of_the_body_inertial_frame(double t, double point_x
     rpos = xc - xf;
 
     double alpha_dot;
-    alpha_dot = alpha_dot_instantaneous(t);
+    alpha_dot = 0.0; // always 0 in case of pitching and plunging
 
     cap_omega(0) = 0.0;
     cap_omega(1) = 0.0;
@@ -350,7 +275,7 @@ VectorXd velocity_at_surface_of_the_body_inertial_frame(double t, double point_x
     return (um);
 }
 
-void nodal_coordinates_instantaneous(VectorXd &x0, VectorXd &y0, VectorXd &x_pp, VectorXd &y_pp, double alpha, double t)
+void nodal_coordinates_instantaneous(int n, double x_pitch, double y_pitch, double alpha, VectorXd &x0, VectorXd &y0, VectorXd &x_pp, VectorXd &y_pp)
 {
     ofstream myfile2;
     myfile2.open("output_files/panel_points_instantaneous.dat");
@@ -362,24 +287,26 @@ void nodal_coordinates_instantaneous(VectorXd &x0, VectorXd &y0, VectorXd &x_pp,
 
     for (int i = 0; i < n; i++)
     {
-        inert_temp = body_fixed_frame_to_inertial_frame(x0(i), y0(i), alpha, t);
+        inert_temp = body_fixed_frame_to_inertial_frame(x_pitch, y_pitch, alpha, x0(i), y0(i));
         x_pp(i) = inert_temp(0);
         y_pp(i) = inert_temp(1);
         myfile2 << x_pp(i) << "\t" << y_pp(i) << endl;
     }
+    myfile2.close();
 }
 
 /*calculate the control points */
-void controlpoints(VectorXd &x_pp, VectorXd &y_pp, VectorXd &x_cp, VectorXd &y_cp)
+void controlpoints(int n, VectorXd &x_pp, VectorXd &y_pp, VectorXd &x_cp, VectorXd &y_cp)
 {
     ofstream myfile3;
-    myfile3.open("control_points_instantaneous.dat");
+    myfile3.open("output_files/control_points_instantaneous.dat");
     for (int j = 0; j < (n - 1); j++)
     {
-        x_cp(j) = x_pp(j) - (x_pp(j) - x_pp(j + 1)) / 2;
-        y_cp(j) = y_pp(j) - (y_pp(j) - y_pp(j + 1)) / 2;
+        x_cp(j) = x_pp(j) - (x_pp(j) - x_pp(j + 1)) / 2.0;
+        y_cp(j) = y_pp(j) - (y_pp(j) - y_pp(j + 1)) / 2.0;
         myfile3 << x_cp(j) << "\t" << y_cp(j) << endl;
     }
+    myfile3.close();
 }
 
 MatrixXd influence_matrix(double point1_x, double point1_y, double point2_x, double point2_y, double desired_point_x, double desired_point_y)
@@ -428,7 +355,7 @@ MatrixXd influence_matrix(double point1_x, double point1_y, double point2_x, dou
     return P;
 }
 
-void Amatrix(MatrixXd &A, VectorXd &x_cp, VectorXd &y_cp, VectorXd &x_pp, VectorXd &y_pp)
+void Amatrix(int n, MatrixXd &A, VectorXd &x_cp, VectorXd &y_cp, VectorXd &x_pp, VectorXd &y_pp)
 {
     ofstream myfile3;
     myfile3.open("A_matrix_file.dat");
@@ -465,9 +392,10 @@ void Amatrix(MatrixXd &A, VectorXd &x_cp, VectorXd &y_cp, VectorXd &x_pp, Vector
     A(n - 1, 0) = 1.0;
     A(n - 1, n - 1) = 1.0;
     myfile3 << A << endl;
+    myfile3.close();
 }
 
-void panel(VectorXd &l_x, VectorXd &l_y, VectorXd &l, VectorXd &x_pp, VectorXd &y_pp)
+void panel(int n, VectorXd &l_x, VectorXd &l_y, VectorXd &l, VectorXd &x_pp, VectorXd &y_pp)
 {
     for (int i = 0; i < n - 1; i++)
     {
@@ -477,7 +405,7 @@ void panel(VectorXd &l_x, VectorXd &l_y, VectorXd &l, VectorXd &x_pp, VectorXd &
     }
 }
 
-void normal_function_for_panels(MatrixXd &unit_normal, VectorXd &l_x, VectorXd &l_y) /*here we are finding the unit normal of n-1 panels*/
+void normal_function_for_panels(int n, MatrixXd &unit_normal, VectorXd &l_x, VectorXd &l_y) /*here we are finding the unit normal of n-1 panels*/
 {
     VectorXd panel_length(2);
     VectorXd unit_normal_vector(2);
@@ -490,7 +418,7 @@ void normal_function_for_panels(MatrixXd &unit_normal, VectorXd &l_x, VectorXd &
         unit_normal(i, 1) = unit_normal_vector(1);
     }
 }
-void tangent_function_for_panels(MatrixXd &unit_tangent, VectorXd &l_x, VectorXd &l_y) /*here we are finding the unit normal of n-1 panels*/
+void tangent_function_for_panels(int n, MatrixXd &unit_tangent, VectorXd &l_x, VectorXd &l_y) /*here we are finding the unit normal of n-1 panels*/
 {
     VectorXd panel_length(2);
     VectorXd unit_tangent_vector(2);
@@ -503,7 +431,7 @@ void tangent_function_for_panels(MatrixXd &unit_tangent, VectorXd &l_x, VectorXd
         unit_tangent(i, 1) = unit_tangent_vector(1);
     }
 }
-VectorXd velocity_bound_vortices(VectorXd &x_pp, VectorXd &y_pp, double x, double y, VectorXd G_bound)
+VectorXd velocity_bound_vortices(int n, VectorXd &x_pp, VectorXd &y_pp, double x, double y, VectorXd G_bound)
 {
     VectorXd VEL(2);
     VEL(0) = 0.0;
@@ -552,7 +480,7 @@ VectorXd velocity_induced_due_to_discrete_vortex(double gamma, double vor_point_
     return (V);
 }
 /*this function returns the residuals */
-VectorXd newton_raphson(double dt, double t, double lwp, double theta_wp, VectorXd &vtotal_wp_cp, VectorXd &x_pp, VectorXd &y_pp, VectorXd &x_cp, VectorXd &y_cp, VectorXd &l, VectorXd &B_unsteady, VectorXd &gamma_unsteady, double gamma_old, VectorXd &gamma_bound, vector<double> &gamma_wake_strength, vector<double> &gamma_wake_x_location, vector<double> &gamma_wake_y_location, VectorXd &wake_panel_cp, VectorXd &wake_panel_normal, MatrixXd &A_unsteady, MatrixXd &unit_normal, MatrixXd &wake_panel_coordinates)
+VectorXd newton_raphson(int n, double dt, double t, double lwp, double theta_wp,VectorXd freestream, VectorXd &vtotal_wp_cp, VectorXd &x_pp, VectorXd &y_pp, VectorXd &x_cp, VectorXd &y_cp, VectorXd &l, VectorXd &B_unsteady, VectorXd &gamma_unsteady, double gamma_old, VectorXd &gamma_bound, vector<double> &gamma_wake_strength, vector<double> &gamma_wake_x_location, vector<double> &gamma_wake_y_location, VectorXd &wake_panel_cp, VectorXd &wake_panel_normal, MatrixXd &A_unsteady, MatrixXd &unit_normal, MatrixXd &wake_panel_coordinates)
 {
     VectorXd wake_influence(n - 1);
     Vector2d unit_gamma_wake(1, 1);
@@ -604,7 +532,7 @@ VectorXd newton_raphson(double dt, double t, double lwp, double theta_wp, Vector
     }
 
     /*finding the total velocity induced at the control point of the wake panel*/
-    velocity_bound = velocity_bound_vortices(x_pp, y_pp, wake_panel_cp(0), wake_panel_cp(1), gamma_bound);
+    velocity_bound = velocity_bound_vortices(n,x_pp, y_pp, wake_panel_cp(0), wake_panel_cp(1), gamma_bound);
     if (t == 0)
     {
         shed_vel(0) = 0.0;
@@ -619,7 +547,7 @@ VectorXd newton_raphson(double dt, double t, double lwp, double theta_wp, Vector
             shed_vel = shed_vel + velocity_induced_due_to_discrete_vortex(gamma_wake_strength[j], gamma_wake_x_location[j], gamma_wake_y_location[j], wake_panel_cp(0), wake_panel_cp(1));
         }
     }
-
+ 
     vtotal_wp_cp = velocity_bound + shed_vel + freestream;
     VectorXd residuals(2);
     residuals(0) = lwp - magnitude(vtotal_wp_cp) * dt;
@@ -627,12 +555,13 @@ VectorXd newton_raphson(double dt, double t, double lwp, double theta_wp, Vector
     return residuals;
 }
 
-void plot_wake(FILE *gnuplotPipe, const vector<double> &gamma_wake_x_location, const vector<double> &gamma_wake_y_location, double wake_x1, double wake_y1, double wake_x2, double wake_y2, const VectorXd &x_pp, const VectorXd &y_pp)
+void plot_wake(FILE *gnuplotPipe, const vector<double> &gamma_wake_x_location, const vector<double> &gamma_wake_y_location, double wake_x1, double wake_y1, double wake_x2, double wake_y2, const VectorXd &x_pp, const VectorXd &y_pp, const string &terminal_type)
 {
-    fprintf(gnuplotPipe, "set terminal x11\n");  // Ensure X11 is used
+    fprintf(gnuplotPipe, "set terminal %s\n", terminal_type.c_str());
     fprintf(gnuplotPipe, "set size ratio -1\n"); // Equal axis scaling
+    fprintf(gnuplotPipe, "set key outside right\n");
 
-    fprintf(gnuplotPipe, "plot '-' with points pt 7 ps 1.0 lc rgb 'red', '-' with lines lw 3 lc rgb 'blue'\n");
+    fprintf(gnuplotPipe, "plot '-' title 'Wake Vortices' with points pt 7 ps 1.0 lc rgb 'red', '-' title 'Airfoil Surface' with lines lw 3 lc rgb 'blue'\n");
 
     // Plot wake vortices (Red points)
     fprintf(gnuplotPipe, "%lf %lf\n", wake_x1, wake_y1);
@@ -652,8 +581,9 @@ void plot_wake(FILE *gnuplotPipe, const vector<double> &gamma_wake_x_location, c
     fflush(gnuplotPipe);         // Update plot immediately
 }
 
-void plot_ClvsTime(FILE *gnuplotPipe1, const vector<double> &xdata, const vector<double> &ydata)
+void plot_ClvsTime(FILE *gnuplotPipe1, const vector<double> &xdata, const vector<double> &ydata, double tou_max, const string &terminal_type)
 {
+    fprintf(gnuplotPipe1, "set terminal %s\n", terminal_type.c_str());
     fprintf(gnuplotPipe1, "set grid\n");
     fprintf(gnuplotPipe1, "set title 'Evolution of lift coefficient with time'\n");
     fprintf(gnuplotPipe1, "set xlabel'2*Qinf*t/c'\n");
@@ -662,25 +592,76 @@ void plot_ClvsTime(FILE *gnuplotPipe1, const vector<double> &xdata, const vector
     fprintf(gnuplotPipe1, "set yrange [0:1]\n");
     fprintf(gnuplotPipe1, "set xrange [0:%lf]\n", tou_max);
 
-    fprintf(gnuplotPipe1, "set terminal x11\n"); // Ensure X11 is used
+    fprintf(gnuplotPipe1, "set terminal %s\n", terminal_type.c_str());
     fprintf(gnuplotPipe1, "plot '-' with lines lw 3 lc rgb 'green'\n");
 
-    for (int i = 0; i < xdata.size(); i++)
+    for (size_t i = 0; i < xdata.size(); i++)
     {
         fprintf(gnuplotPipe1, "%lf %lf\n", xdata[i], ydata[i]);
     }
-    fprintf(gnuplotPipe1, "e\n"); // End of second dataset (airfoil)
+    fprintf(gnuplotPipe1, "e\n"); // End of dataset
     fflush(gnuplotPipe1);         // Update plot immediately
 }
 
 int main()
-{ 
+{
     // Start timer
     auto start = chrono::high_resolution_clock::now();
 
+    // Open the JSON file
+    ifstream infile("impulsive_start_input.json");
+    if (!infile.is_open())
+    {
+        cerr << "Error opening input JSON file!" << endl;
+        return 1;
+    }
+
+    json input;
+    infile >> input;
+
+    // Extract geometry
+    int n = input["geometry"]["n"];
+    double c = input["geometry"]["c"];
+    double ymc = input["geometry"]["ymc"];
+    double xmc = input["geometry"]["xmc"];
+    double tmax = input["geometry"]["tmax"];
+    int trailing_edge_type = input["geometry"]["trailing_edge_type"];
+
+    // Derived parameters
+    double p = ymc / 100.0;
+    double q = xmc / 10.0;
+    double t_m = tmax / 100.0;
+
+    // Extract flow
+
+    double Qinf = input["flow"]["Qinf"].get<double>();
+    /*In this problem we are rotating the airfoil by instantaneous angle of attack keeping the freestream direction parallel to X dirn.[INERTIAL FRAME]*/
+    double Uinf = Qinf;
+    double Vinf = 0.0;
+    Vector2d freestream(Uinf, Vinf);
+
+    // Extract motion
+
+    double alpha = input["motion"]["alpha"].get<double>() * DEG2RAD;
+
+    // Pitch axis: default to mid-chord if not specified
+    double x_pitch = input["motion"]["x_pitch"].is_null() ? c / 4.0 : input["motion"]["x_pitch"].get<double>();
+    double y_pitch = input["motion"]["y_pitch"].is_null() ? 0.0 : input["motion"]["y_pitch"].get<double>();
+
+    // Extract simulation
+    int wake = input["simulation"]["wake"];
+    double tolerance = input["simulation"]["tolerance"];
+    double epsilon = input["simulation"]["epsilon"];
+    double tou_max = input["simulation"]["tou_max"].get<double>();
+    int z = input["simulation"]["z"];
+    string gnuplot_terminal = input["simulation"]["gnuplot_terminal"].get<std::string>();
+
+    double dt = (16.0 * c) / ((n - 1) * Qinf);
+    double timemax = tou_max * c * 0.5 / Qinf;
+    const int nsteps = timemax / dt; // max number of iterations or time steps.............
     double t;
     double alpha_ins;
-    // cout << freestream << endl;
+
     vector<double> xdata;
     vector<double> ydata;
     VectorXd x0(n), y0(n), x_pp(n), y_pp(n), x_cp(n - 1), y_cp(n - 1);
@@ -691,14 +672,13 @@ int main()
 
     double offset = 1.e-4;
     /* FIRST OBTAIN THE STEADY STATE SOLUTION */
-    nodal_coordinates_initial(x0, y0); // initial coordinates of airfoil
-    alpha_ins = alpha_instantaneous(0);
-    nodal_coordinates_instantaneous(x0, y0, x_pp, y_pp, alpha_ins, 0); // airfoil got rotated by alpha
-    controlpoints(x_pp, y_pp, x_cp, y_cp);
-    Amatrix(A, x_cp, y_cp, x_pp, y_pp);
-    panel(l_x, l_y, l, x_pp, y_pp);
-    normal_function_for_panels(unit_normal, l_x, l_y);
-    tangent_function_for_panels(unit_tangent, l_x, l_y);
+    nodal_coordinates_initial(n, c, q, p, trailing_edge_type, t_m, x0, y0); // initial coordinates of airfoil
+    nodal_coordinates_instantaneous(n,x_pitch,y_pitch,alpha,x0,y0,x_pp,y_pp);     // airfoil got rotated by alpha
+    controlpoints(n, x_pp, y_pp, x_cp, y_cp);
+    Amatrix(n, A, x_cp, y_cp, x_pp, y_pp);
+    panel(n, l_x, l_y, l, x_pp, y_pp);
+    normal_function_for_panels(n, unit_normal, l_x, l_y);
+    tangent_function_for_panels(n, unit_tangent, l_x, l_y);
 
     for (int i = 0; i < n - 1; i++)
     {
@@ -724,7 +704,7 @@ int main()
 
     for (int i = 0; i < n - 1; i++)
     {
-        vel = velocity_bound_vortices(x_pp, y_pp, x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset, gamma_steady);
+        vel = velocity_bound_vortices(n, x_pp, y_pp, x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset, gamma_steady);
         V_STEADY = magnitude(vel + freestream);
         cp_steady(i) = 1.0 - (V_STEADY * V_STEADY) / (Qinf * Qinf);
         cp_steady_file << x_cp(i) << "\t" << cp_steady(i) << endl;
@@ -813,11 +793,13 @@ int main()
     fprintf(gnuplotPipe, "set title 'In-Situ Wake Vortex Visualization'\n");
 
     FILE *gnuplotPipe1 = popen("gnuplot -persist", "w");
-    if (!gnuplotPipe)
+    if (!gnuplotPipe1)
     {
-        cerr << "Error: Could not open GNUplot.\n";
+       cerr << "Error: Could not open GNUplot for Cl vs Time.\n";
         return 1;
     }
+    fprintf(gnuplotPipe1, "set grid\n");
+    fprintf(gnuplotPipe1, "set title 'Lift Coefficient'\n");
 
     double prcntgtme;
 
@@ -874,7 +856,7 @@ int main()
         {
             airfoilnormalfile << unit_normal(i, 0) << "\t" << unit_normal(i, 1) << endl;
         }
-        cout << "time period= " << T << endl;
+
         cout << "iteration /time instance =" << iter << endl;
         /*self induced portion and kutta conditon...*/
         for (int i = 0; i < n; i++)
@@ -915,7 +897,7 @@ int main()
                     shed_vel = shed_vel + velocity_induced_due_to_discrete_vortex(gamma_wake_strength[j], gamma_wake_x_location[j], gamma_wake_y_location[j], x_cp(i), y_cp(i));
                 }
             }
-            flow_vel = velocity_at_surface_of_the_body_inertial_frame(t, x_cp(i), y_cp(i));
+            flow_vel = velocity_at_surface_of_the_body_inertial_frame(Qinf, x_pitch, y_pitch, x_cp(i), y_cp(i));
             // cout << magnitude(flow_vel) << endl;
 
             B_unsteady(i) = -dot(shed_vel + flow_vel, normal_vector_panel_cp);
@@ -933,17 +915,17 @@ int main()
         {
             cout << "convergence iteration= " << conv_iter << endl;
             /*first step is to fill the first column of the Jacobian matrix...*/
-            residuals = newton_raphson(dt, t, lwp, theta_wp, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
+            residuals = newton_raphson(n, dt, t, lwp, theta_wp, freestream, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
             jacobian(0, 0) = 0.0;
             jacobian(0, 1) = 0.0;
             jacobian(1, 0) = 0.0;
             jacobian(1, 1) = 0.0;
-            residuals_plus = newton_raphson(dt, t, lwp + epsilon, theta_wp, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
+            residuals_plus = newton_raphson(n, dt, t, lwp + epsilon, theta_wp, freestream, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
 
             jacobian(0, 0) = (residuals_plus(0) - residuals(0)) / epsilon;
             jacobian(1, 0) = (residuals_plus(1) - residuals(1)) / epsilon;
 
-            residuals_plus = newton_raphson(dt, t, lwp, theta_wp + epsilon, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
+            residuals_plus = newton_raphson(n, dt, t, lwp, theta_wp + epsilon, freestream, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
 
             jacobian(0, 1) = (residuals_plus(0) - residuals(0)) / epsilon;
             jacobian(1, 1) = (residuals_plus(1) - residuals(1)) / epsilon;
@@ -967,7 +949,7 @@ int main()
 
             conv_iter++;
         } while ((convergence) > tolerance);
-        residuals = newton_raphson(dt, t, lwp, theta_wp, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
+        residuals = newton_raphson(n, dt, t, lwp, theta_wp, freestream, vtotal_wp_cp, x_pp, y_pp, x_cp, y_cp, l, B_unsteady, gamma_unsteady, gamma_old, gamma_bound, gamma_wake_strength, gamma_wake_x_location, gamma_wake_y_location, wake_panel_cp, wake_panel_normal, A_unsteady, unit_normal, wake_panel_coordinates);
         gamma_wp = gamma_unsteady(n);
         cout << "CONVERGED VALUES =" << "\t" << "uwp= " << vtotal_wp_cp(0) << "\t" << "vwp=" << vtotal_wp_cp(1) << "\t" << "gamma_wp=" << gamma_wp << "\t" << "lwp=" << lwp << "\t" << "theta_wp=" << theta_wp << endl;
         cout << "--------------------------------------------------------------------------------------------------------------------- " << endl;
@@ -985,7 +967,7 @@ int main()
         /* Once the Iterative Procedure to calculate the length and orientation of the wake panel has converged,we can now calculate the aerodynamic loads ......*/
 
         /* For that first compute the pressure distribution on the surface of the airfoil and then integrate that pressure to obtain the lift and drag forces ...*/
-        int z = 200;                               // number of panels..
+        // int z = 200;                               // number of panels..
         VectorXd x_forward_stag_streamline(z + 1); // z+1 is the number of nodes in forward stagnation streamline.
         VectorXd y_forward_stag_streamline(z + 1);
         VectorXd xcp_forward_stag_streamline(z);
@@ -1041,7 +1023,7 @@ int main()
         {
             panel_coeff_matrix_wake = influence_matrix(wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), xcp_forward_stag_streamline(i), ycp_forward_stag_streamline(i));
             vifsl_rw = panel_coeff_matrix_wake * wake_panel_strength;
-            vifsl_b = velocity_bound_vortices(x_pp, y_pp, xcp_forward_stag_streamline(i), ycp_forward_stag_streamline(i), gamma_bound);
+            vifsl_b = velocity_bound_vortices(n, x_pp, y_pp, xcp_forward_stag_streamline(i), ycp_forward_stag_streamline(i), gamma_bound);
             if (t == 0)
             {
                 vifsl_pw(0) = 0.0;
@@ -1080,7 +1062,7 @@ int main()
                 {
                     panel_coeff_matrix_wake = influence_matrix(wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset);
                     viacp_rw = panel_coeff_matrix_wake * wake_panel_strength;
-                    viacp_b = velocity_bound_vortices(x_pp, y_pp, x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset, gamma_bound);
+                    viacp_b = velocity_bound_vortices(n, x_pp, y_pp, x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset, gamma_bound);
                     if (t == 0)
                     {
                         viacp_pw(0) = 0.0;
@@ -1112,7 +1094,7 @@ int main()
                 {
                     panel_coeff_matrix_wake = influence_matrix(wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset);
                     viacp_rw = panel_coeff_matrix_wake * wake_panel_strength;
-                    viacp_b = velocity_bound_vortices(x_pp, y_pp, x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset, gamma_bound);
+                    viacp_b = velocity_bound_vortices(n, x_pp, y_pp, x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset, gamma_bound);
                     if (t == 0)
                     {
                         viacp_pw(0) = 0.0;
@@ -1167,7 +1149,7 @@ int main()
         {
             panel_coeff_matrix_wake = influence_matrix(wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset);
             viacp_rw = panel_coeff_matrix_wake * wake_panel_strength;
-            viacp_b = velocity_bound_vortices(x_pp, y_pp, x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset, gamma_bound);
+            viacp_b = velocity_bound_vortices(n, x_pp, y_pp, x_cp(i) + unit_normal(i, 0) * offset, y_cp(i) + unit_normal(i, 1) * offset, gamma_bound);
             if (iter == 0)
             {
                 viacp_pw(0) = 0.0;
@@ -1185,15 +1167,15 @@ int main()
                 dphi_dt(i) = ((phi_new(i) - phi_old(i))) / dt;
             }
 
-            flow_vel = velocity_at_surface_of_the_body_inertial_frame(t, x_cp(i), y_cp(i));
+            flow_vel = velocity_at_surface_of_the_body_inertial_frame(Qinf, x_pitch, y_pitch, x_cp(i), y_cp(i));
             vi = viacp_rw + viacp_b + viacp_pw + flow_vel;
             V = magnitude(vi);
             cp(i) = 1.0 - (V * V) / (Qinf * Qinf) - (2.0 / (Qinf * Qinf)) * (dphi_dt(i));
             // Vector2d tangent_vec;
             // tangent_vec(0) = unit_tangent(i, 0); // tangent vector at ith control point
             // tangent_vec(1) = unit_tangent(i, 1);
-            //double tang_vel =  (dot(vi,tangent_vec));
-            //cp(i) = 1.0 - (tang_vel*tang_vel) / (Qinf * Qinf) - (2.0 / (Qinf * Qinf)) * (dphi_dt(i));
+            // double tang_vel =  (dot(vi,tangent_vec));
+            // cp(i) = 1.0 - (tang_vel*tang_vel) / (Qinf * Qinf) - (2.0 / (Qinf * Qinf)) * (dphi_dt(i));
             // cp(i) = 1.0 - (V * V) / (Qinf * Qinf); [steady]
         }
         for (int i = 0; i < n - 1; i++)
@@ -1235,8 +1217,8 @@ int main()
         {
             wakefile << gamma_wake_x_location[k] << "\t" << gamma_wake_y_location[k] << endl;
         }
-        plot_wake(gnuplotPipe, gamma_wake_x_location, gamma_wake_y_location, wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), x_pp, y_pp);
-        plot_ClvsTime(gnuplotPipe1, xdata, ydata);
+        plot_wake(gnuplotPipe, gamma_wake_x_location, gamma_wake_y_location, wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), x_pp, y_pp, gnuplot_terminal);
+        plot_ClvsTime(gnuplotPipe1, xdata, ydata, tou_max, gnuplot_terminal);
 
         /***  next task is to propagate the wake point vortices ***/
 
@@ -1269,21 +1251,21 @@ int main()
                 }
                 // cout << shed_vel << endl;
                 /*velocity induced at jth wake point due to bound vortices*/
-                velocity = velocity_bound_vortices(x_pp, y_pp, gamma_wake_x_location[j], gamma_wake_y_location[j], gamma_bound);
+                velocity = velocity_bound_vortices(n, x_pp, y_pp, gamma_wake_x_location[j], gamma_wake_y_location[j], gamma_bound);
                 /*********** velocity induced at jth wake point due to wake panel ********/
                 panel_coeff_matrix_wake = influence_matrix(wake_panel_coordinates(0, 0), wake_panel_coordinates(0, 1), wake_panel_coordinates(1, 0), wake_panel_coordinates(1, 1), gamma_wake_x_location[j], gamma_wake_y_location[j]);
                 vel_wake_point = panel_coeff_matrix_wake * wake_panel_strength;
-                if (wakechoice == 0)
+                if (wake == 0)
                 {
                     /******** free wake ********/
                     gamma_wake_x_new_location[j] = gamma_wake_x_location[j] + (freestream(0) + shed_vel(0) + velocity(0) + vel_wake_point(0)) * dt;
                     gamma_wake_y_new_location[j] = gamma_wake_y_location[j] + (freestream(1) + shed_vel(1) + velocity(1) + vel_wake_point(1)) * dt;
                 }
-                else if (wakechoice == 1)
+                else if (wake == 1)
                 {
                     /******** prescribed wake ********/
-                    gamma_wake_x_new_location[j] = gamma_wake_x_location[j] + (freestream(0))*dt;
-                    gamma_wake_y_new_location[j] = gamma_wake_y_location[j] + (freestream(1))*dt;
+                    gamma_wake_x_new_location[j] = gamma_wake_x_location[j] + (freestream(0)) * dt;
+                    gamma_wake_y_new_location[j] = gamma_wake_y_location[j] + (freestream(1)) * dt;
                 }
             }
             for (int j = 0; j < size; j++)
@@ -1309,6 +1291,7 @@ int main()
         airfoilnormalfile.close();
     }
     myfile_load_cal.close();
+    wake_panel.close();
     pclose(gnuplotPipe);
     pclose(gnuplotPipe1);
 
@@ -1317,6 +1300,8 @@ int main()
     {
         wake_last_time_step << gamma_wake_x_location[j] << "\t" << gamma_wake_y_location[j] << endl;
     }
+    wake_last_time_step.close();
+
     // End timer
     auto end = chrono::high_resolution_clock::now();
 

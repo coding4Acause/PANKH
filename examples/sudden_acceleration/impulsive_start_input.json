@@ -1,0 +1,50 @@
+{
+  "__geometry_explain": {
+    "n": "Number of nodes along the airfoil surface (n-1 panels) [It can be even or odd]",
+    "ymc": "1st digit of NACA 4-digit series (camber percentage)",
+    "xmc": "2nd digit of NACA 4-digit series (location of max camber)",
+    "tmax": "Last two digits of NACA 4-digit series (thickness percentage)",
+    "trailing_edge_type": "1 = open trailing edge, else closed",
+    "c": "Chord length of the airfoil [m]"
+  },
+  "geometry": {
+    "n": 101,
+    "c": 0.2,
+    "ymc": 0.0,
+    "xmc": 0.0,
+    "tmax": 12.0,
+    "trailing_edge_type": 2
+  },
+  "__flow_explain": {
+    "Qinf": "Freestream velocity magnitude [m/s]"
+  },
+  "flow": {
+    "Qinf": 10.0
+  },
+  "__motion_explain": {
+    "alpha": "Mean pitch [degree](constant angle of attack)",
+    "x_pitch": "x-coordinate of pitching axis",
+    "y_pitch": "y-coordinate of pitching axis"
+  },
+  "motion": {
+    "alpha": 5.0,
+    "x_pitch": null,
+    "y_pitch": null
+  },
+  "__simulation_explain": {
+    "wake": "0 = free wake, 1 = prescribed wake",
+    "tolerance": "Convergence tolerance for Newton-Raphson iteration",
+    "epsilon": "Small perturbation for finite differences",
+    "tou_max": "max. non-dimensionalize time",
+    "z": "Number of points for stagnation streamline integration",
+    "gnuplot_terminal": "Type of Gnuplot terminal for live visualization ('x11' for Linux, 'qt' for macOS/Windows)"
+  },
+  "simulation": {
+    "wake": 0,
+    "tolerance": 1e-5,
+    "epsilon": 1e-8,
+    "tou_max": 50,
+    "z": 200,
+    "gnuplot_terminal": "x11"
+  }
+}
