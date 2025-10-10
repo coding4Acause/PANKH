@@ -31,7 +31,7 @@ Your contributions—whether in the form of code, documentation, bug reports, fe
 
 ## Code of Conduct
 
-Please read our [Code of Conduct](https://github.com/coding4Acause/PANKH/blob/main/contributing.md) before contributing. By participating in this project, you agree to follow its terms.
+Please read our [Code of Conduct](https://github.com/coding4Acause/PANKH/blob/main/Code_of_Conduct.md) before contributing. By participating in this project, you agree to follow its terms.
 
 ---
 
