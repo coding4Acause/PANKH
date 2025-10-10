@@ -59,6 +59,14 @@ To compile and run the code, ensure the following are installed:
 
 From terminal:
 
+Compile:
+
 ```bash
-g++ impulsive_start.cpp -o impulsive_start
-./impulsive_start
+g++ -o PANKH_impulsive impulsive_start.cpp 
+```
+Run:
+
+```bash
+./PANKH_impulsive  impulsive_start_input.json
+```
+PANKH_impulsive is the executable and impulsive_start_input.json is tailored input file for impulsive_start.cpp solver.
