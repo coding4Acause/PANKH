@@ -92,7 +92,7 @@ Before compiling and running the code, ensure the installation of the following 
 <details>
   <summary>Real-time / In-situ Visualization of Aerodynamic Forces and Vortex Shedding</summary>
 
-   Comprehensive platform-specific prerequisites, installation procedures, and verification protocols for enabling real-time visualization are detailed in [visualization_setup.md](Visualization_setup.md). This includes instructions for Gnuplot terminals, X11 support, and validation of plotting functionality across Linux, macOS, and Windows.
+   Comprehensive platform-specific prerequisites, installation procedures, and verification protocols for enabling real-time visualization are detailed in [visualization_setup.md](https://github.com/coding4Acause/PANKH/blob/main/visualization_setup.md). This includes instructions for Gnuplot terminals, X11 support, and validation of plotting functionality across Linux, macOS, and Windows.
 </details>
   
 ### Getting the Source Code

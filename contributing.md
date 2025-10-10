@@ -31,7 +31,7 @@ Your contributions—whether in the form of code, documentation, bug reports, fe
 
 ## Code of Conduct
 
-Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing. By participating in this project, you agree to follow its terms.
+Please read our [Code of Conduct](https://github.com/coding4Acause/PANKH/blob/main/contributing.md) before contributing. By participating in this project, you agree to follow its terms.
 
 ---
 
@@ -175,7 +175,7 @@ The PANKH core team is actively seeking contributors in the following areas:
 - **Development of a GUI or CLI**: We welcome contributors to build a graphical user interface or an interactive command-line tool similar to *XFOIL*, allowing users to control simulation parameters and view flow visualizations more intuitively.
 - **Improved airfoil support**: Extend the geometry module to handle *arbitrary airfoil geometries*, including NACA or imported `.dat` formats, and automatically generate surface panels with smooth curvature handling.
 - **Fluid–Structure Interaction (FSI)**: We are working on incorporating structural flexibility into the solver for *2-way FSI* simulations with deformable airfoils.
-- *3D extension*: The roadmap includes extending PANKH from 2D unsteady panel methods to full *3D vortex-lattice-based simulations* in the near future.
+- **3D extension**: The roadmap includes extending PANKH from 2D unsteady panel methods to full *3D vortex-lattice-based simulations* in the near future.
 
 If any of these areas interest you, please reach out or open a discussion—we’d love to collaborate!
 
