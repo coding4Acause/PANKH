@@ -185,6 +185,46 @@ icpx -o PANKH_solver src/*.cpp -Iinclude -std=c++11
    > Note: The solver expects the `input.json` file as a command-line argument. Ensure this file exists in the same directory or provide the correct path.
 </details>
 
+## Running Tests
+To verify the correctness of **PANKH**, you can run the automated test locally. The user does not need to modify anything unless explicitly desired. Simply ensure the prerequisites are satisfied, then compile and execute the test script.
+
+<details><summary>Prerequisites</summary>
+
+- Compile the main solver (PANKH_solver) from the root directory before executing the test   script. The test relies on this executable to run the simulations internally.
+- Ensure there is a folder named `tests/` in the project root.
+- Inside the `tests/` folder, you will find:
+
+  - **`test.cpp`** – The test script.
+  - **`input_test.json`** – The input file designed for the test case.
+  - **Reference solution file** – Contains published data used for verification.
+
+</details>
+
+<details><summary> Compilation</summary>
+
+- From the project root directory, compile the test script: 
+ ```bash
+  g++ -o test_exec tests/test.cpp
+  ```
+</details>
+
+<details><summary> Run</summary>
+
+ ```bash
+  ./test_exec tests/input_test.json
+  ```
+- The script will automatically run the main solver, compare the computed lift coefficient with the reference solution, and print the results.
+
+</details>
+
+<details><summary> Functionality of test.cpp</summary>
+
+- Internally, `test.cpp` executes the main solver using the provided test input.
+- It collects the solver’s output (aerodynamic loads data) from the `output_files/` directory.
+- Compares the computed lift coefficient against the reference solution.
+- Prints clear messages indicating whether the test passed or failed.
+</details>
+
 ##  API Documentation
 
 ###  Overview
