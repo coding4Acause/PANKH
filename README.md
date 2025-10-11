@@ -30,14 +30,14 @@ Before addressing the complete three-dimensional problem, it is often essential 
 
 Traditionally, aerodynamic problems are investigated through:
 1. Experimental studies – accurate but time-consuming and costly due to setup design and instrumentation.
-2. Analytical studies – elegant but limited to highly simplified versions of real-world problems.
+2. Analytical studies – provide closed-form solutions that offer exact mathematical results and deep physical insight, but are generally limited to highly idealized or simplified versions of real-world problems.
 3. Numerical simulations – increasingly popular since the advent of modern computing, offering flexibility and control over complex configurations.
 
 Numerical approaches can be broadly classified into:
 - **High-fidelity solvers** that resolve the Navier–Stokes equations with all flow physics, and  
 - **Reduced-order models** based on simplifying assumptions that retain key aerodynamic behavior at a fraction of the computational cost.
 
-**PANKH** falls into the second category. It solves the **Laplace equation** under **potential flow assumptions**, making it ideal for low-speed, inviscid, incompressible, and irrotational flows.  
+**PANKH** falls into the second category of numerical studies. It solves the **Laplace equation** under **potential flow assumptions**, making it ideal for low-speed, inviscid, incompressible, and irrotational flows.  
 
 High-fidelity CFD solvers demand substantial computational resources — often running for **days on HPC clusters** across multiple nodes and cores. Moreover, **commercial CFD packages** are expensive, opaque “black-box” systems, making benchmark validations and modifications challenging.  
 
