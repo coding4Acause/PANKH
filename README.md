@@ -19,6 +19,78 @@ The essence of this approach lies in transforming a partial differential equatio
 This solver is implemented in C++ and utilizes the **Eigen library** for efficient matrix operations. The code computes unsteady aerodynamic forces acting on an airfoil undergoing prescribed motion. A detailed document explaining the numerical framework will be provided separately.
 ![unsteady_model_at_tk-1](https://github.com/user-attachments/assets/b764fcf8-4402-4e61-bb78-6558aa271894)
 
+## Purpose and Motivation
+
+<details>
+<summary><strong> What does PANKH do?</strong></summary>
+
+Studying and analyzing the aerodynamic forces acting on bodies immersed in a fluid is central to a wide range of applications — from the design of fixed-wing aircraft and flexible morphing wings (HAL), to understanding bird and insect flight, developing flapping-wing drones and ornithopters, and optimizing rotor blades in helicopters and wind turbines.  
+
+Before addressing the complete three-dimensional problem, it is often essential to study the two-dimensional airfoil cross-section, which provides critical insights into the underlying flow physics and lift generation mechanisms.
+
+Traditionally, aerodynamic problems are investigated through:
+1. Experimental studies – accurate but time-consuming and costly due to setup design and instrumentation.
+2. Analytical studies – elegant but limited to highly simplified versions of real-world problems.
+3. Numerical simulations – increasingly popular since the advent of modern computing, offering flexibility and control over complex configurations.
+
+Numerical approaches can be broadly classified into:
+- **High-fidelity solvers** that resolve the Navier–Stokes equations with all flow physics, and  
+- **Reduced-order models** based on simplifying assumptions that retain key aerodynamic behavior at a fraction of the computational cost.
+
+**PANKH** falls into the second category. It solves the **Laplace equation** under **potential flow assumptions**, making it ideal for low-speed, inviscid, incompressible, and irrotational flows.  
+
+High-fidelity CFD solvers demand substantial computational resources — often running for **days on HPC clusters** across multiple nodes and cores. Moreover, **commercial CFD packages** are expensive, opaque “black-box” systems, making benchmark validations and modifications challenging.  
+
+This motivated the development of **PANKH** — an open-source, reduced-order aerodynamic solver for **unsteady potential flows** that is:
+- Fast and lightweight, running within minutes on a single-core desktop,  
+- Reasonably accurate, suitable for early-stage aerodynamic analysis,  
+- Easy to compile, modify, and extend, supporting researchers and educators alike.  
+
+PANKH aims to help users focus on their **state-of-the-art aerodynamic problems** without depending on GUI-based proprietary tools or reinventing in-house codes.
+</details>
+
+---
+
+<details>
+<summary><strong> Why PANKH?</strong></summary>
+
+Several open-source tools exist for simulating flow around airfoils — such as **FoilSim III**, **JavaFoil**, and **XFOIL** — but they are **limited to steady-state aerodynamics**.  
+In contrast, open-source solvers that handle **unsteady potential flows** are scarce, and those that do exist are often **proprietary, undocumented, or poorly maintained**.
+
+**PANKH bridges this gap.**  
+It provides a **modular C++ implementation** capable of simulating:
+- **Impulsive starts**,  
+- **Pitching and plunging motions**, and  
+- **Arbitrary user-defined unsteady kinematics.**
+
+The solver computes **aerodynamic loads**, including **lift** and **inviscid drag** due to pressure forces, and visualizes the **real-time evolution** of both the aerodynamic coefficients and the **vortex wake roll-up**.  
+
+Remarkably, all this computation can be performed **within minutes on a standard single-core processor**.  
+
+While **PANKH does not claim to replace high-fidelity CFD or experiments**, it **complements them effectively** — offering an excellent **trade-off between accuracy, computational cost, and setup complexity**.  
+
+In doing so, PANKH lays the foundation for a new generation of **open-source tools** dedicated to **unsteady aerodynamics** in the potential flow regime.
+</details>
+
+---
+
+<details>
+<summary><strong> Who is PANKH for?</strong></summary>
+
+**PANKH** is designed with versatility in mind, serving a diverse user base:
+
+- Research and Academia:  
+  PANKH can be seamlessly integrated into research workflows for preliminary aerodynamic assessments, parametric studies, or as a component in coupled two-dimensional fluid–structure interaction (FSI) simulations. Its modular design allows researchers to adapt the solver to specific unsteady flow problems, reducing development time while maintaining flexibility for extensions and custom studies.
+  PANKH provides a clear, modular, and well-documented framework, making it an ideal tool for classroom demonstrations, student projects, and graduate-level coursework in unsteady aerodynamics and aeroelasticity. Its simplicity and transparency allow students to observe aerodynamic forces, visualize vortex evolution, and explore unsteady phenomena hands-on, bridging the gap between theoretical learning and practical simulation experience.
+
+
+- Hobbyists and Independent Developers:  
+  With its minimal dependencies and easy compilation process, PANKH provides a hands-on platform for aerodynamic exploration, enabling enthusiasts to simulate and visualize unsteady flow phenomena on their personal computers.
+
+With continued development, PANKH aims to evolve into an industry-grade research tool — balancing open accessibility, scientific rigor, and educational utility.
+</details>
+
+
 ## Features
 - **Real-time wake visualization** using Gnuplot for enhanced flow analysis.
 
