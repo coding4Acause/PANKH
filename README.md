@@ -40,7 +40,7 @@ Numerical approaches can be broadly classified into:
 - **High-fidelity solvers** that resolve the Navier–Stokes equations with all flow physics, and  
 - **Reduced-order models** based on simplifying assumptions that retain key aerodynamic behavior at a fraction of the computational cost.
 
-**PANKH** falls into the second category. It solves the **Laplace equation** under **potential flow assumptions**, making it ideal for low-speed, inviscid, incompressible, and irrotational flows.  
+**PANKH** falls into the second category of numerical studies. It solves the **Laplace equation** under **potential flow assumptions**, making it ideal for low-speed, inviscid, incompressible, and irrotational flows.  
 
 High-fidelity CFD solvers demand substantial computational resources — often running for **days on HPC clusters** across multiple nodes and cores. Moreover, **commercial CFD packages** are expensive, opaque “black-box” systems, making benchmark validations and modifications challenging.  
 
