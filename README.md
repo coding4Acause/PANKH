@@ -11,8 +11,11 @@
 [![CI](https://github.com/coding4Acause/PANKH/actions/workflows/CI.yml/badge.svg)](https://github.com/coding4Acause/PANKH/actions/workflows/CI.yml)
 [![API Docs](https://img.shields.io/badge/API--Docs-Click%20Here-blue?style=flat-square)](https://coding4Acause.github.io/PANKH/)
 
+
 ## Description
 This project implements **PANKH** (Panel Analysis of uNsteady Kinematics of Hovering airfoils), a solver designed to study the aerodynamics of flapping foils. PANKH is a **low-fidelity solver** that solves the **Laplace equation** to determine the velocity distribution in the flow field. It enforces the **Neumann boundary condition** to satisfy the **no-penetration condition** (zero normal flux) on the airfoil surface.   The **unsteady Bernoulli equation** is then applied to compute the pressure difference across the airfoil, enabling the calculation of aerodynamic loads.
+
+![Vortex shedding animation](JOSS/vortex_shedding.gif)
 
 The essence of this approach lies in transforming a partial differential equation (PDE) into a system of linear algebraic equations, reducing the problem to a linear algebra problem. The real geometry is discretized into a series of flat panels, and a piecewise linearly varying vortex panel method is used to simulate the flow around the airfoil. At each time instant, a constant-strength vortex panel is shed from the trailing edge to satisfy *Kelvin's Circulation Theorem*, ensuring the correct representation of unsteady effects.
 
@@ -30,7 +33,7 @@ Before addressing the complete three-dimensional problem, it is often essential 
 
 Traditionally, aerodynamic problems are investigated through:
 1. Experimental studies – accurate but time-consuming and costly due to setup design and instrumentation.
-2. Analytical studies – elegant but limited to highly simplified versions of real-world problems.
+2. Analytical studies – provide closed-form solutions that offer exact mathematical results and deep physical insight, but are generally limited to highly idealized or simplified versions of real-world problems.
 3. Numerical simulations – increasingly popular since the advent of modern computing, offering flexibility and control over complex configurations.
 
 Numerical approaches can be broadly classified into:
