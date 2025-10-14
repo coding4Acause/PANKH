@@ -2,6 +2,8 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <fstream>
+#include <chrono>
+#include <string>
 #include "json.hpp"
 #include "VectorOperations.h"
 #include "geometry.h"
@@ -18,8 +20,18 @@ using namespace std;
 using namespace Eigen;
 using json = nlohmann::json;
 
+// Helper function to convert double to string without trailing zeros
+string double_to_string(double val, int precision = 3) {
+    ostringstream out;
+    out << fixed << setprecision(precision) << val;
+    string s = out.str();
+    s.erase(s.find_last_not_of('0') + 1, string::npos); 
+    if (s.back() == '.') s.pop_back();
+    return s;
+}
 int main(int argc, char *argv[])
 {
+   
     if (argc < 2)
     {
         cerr << "Usage:" << argv[0] << " <input_file.json>" << endl;
@@ -141,8 +153,12 @@ int main(int argc, char *argv[])
     j_cap(0) = 0.0;
     j_cap(1) = 1.0;
 
-    ofstream myfile_load_cal, wake_last_time_step, wake_panel, wakefile, motionfile, pressurefile, gammafile, potentialfile, amatrixfile, bvectorfile, airfoilnormalfile;
-    myfile_load_cal.open("output_files/cl_cd_pitch_plunge_k=1.2_n=101.dat");
+    ofstream wake_last_time_step, wake_panel, wakefile, motionfile, pressurefile, gammafile, potentialfile, amatrixfile, bvectorfile, airfoilnormalfile;
+    
+    string motion_type = "pitch_plunge"; //subjected to change manually
+    string myfile_load_cal = "output_files/cl_cd_" + motion_type + "_k=" + double_to_string(k, 3)+ "_n=" + to_string(n)+ ".dat";
+    ofstream file(myfile_load_cal);
+
     wake_last_time_step.open("output_files/wake at last time step.dat");
     wake_panel.open("output_files/wake panel at last time step.dat");
 
@@ -235,7 +251,6 @@ int main(int argc, char *argv[])
             airfoilnormalfile << unit_normal(i, 0) << "\t" << unit_normal(i, 1) << endl;
         }
 
-        cout << "percentage completed =" << iter / iterMax * 100.0 << endl;
         /*self induced portion and kutta conditon...*/
         for (int i = 0; i < n; i++)
         {
@@ -312,8 +327,8 @@ int main(int argc, char *argv[])
             /* fill the coefficient matrix or the jacobian matrix */
             rhs_vector(0) = -residuals(0);
             rhs_vector(1) = -residuals(1);
-            length_and_angle = jacobian.fullPivHouseholderQr().solve(rhs_vector);
-
+            // length_and_angle = jacobian.colPivHouseholderQr().solve(rhs_vector);
+            length_and_angle = jacobian.partialPivLu().solve(rhs_vector);
             delta_lwp = length_and_angle(0);
             delta_theta_wp = length_and_angle(1);
             convergence = magnitude(length_and_angle);
@@ -345,7 +360,7 @@ int main(int argc, char *argv[])
         /* Once the Iterative Procedure to calculate the length and orientation of the wake panel has converged,we can now calculate the aerodynamic loads ......*/
 
         /* For that first compute the pressure distribution on the surface of the airfoil and then integrate that pressure to obtain the lift and drag forces ...*/
-        int z = 200;                               // number of panels..
+        // int z = 200;                               // number of panels..
         VectorXd x_forward_stag_streamline(z + 1); // z+1 is the number of nodes in forward stagnation streamline.
         VectorXd y_forward_stag_streamline(z + 1);
         VectorXd xcp_forward_stag_streamline(z);
@@ -573,7 +588,7 @@ int main(int argc, char *argv[])
         }
 
         // myfile_load_cal << 2.0*t*Qinf/c  << "\t" << cn_tilda / cl_tilda_steady << "\t" << ca_tilda << endl; //uncomment this for sudden acceleration case.
-        myfile_load_cal << t / T << "\t" << cn_tilda << "\t" << ca_tilda << endl;
+        file << t / T << "\t" << cn_tilda << "\t" << ca_tilda << endl;
 
         xdata.push_back(t / T);
         ydata.push_back(cn_tilda);
@@ -663,10 +678,17 @@ int main(int argc, char *argv[])
     }
     pclose(gnuplotPipe);
     pclose(gnuplotPipe1);
-
+    file.close();
+    
     /*plotting the flowfield at the last time step.*/
     for (size_t j = 0; j < gamma_wake_strength.size(); j++)
     {
         wake_last_time_step << gamma_wake_x_location[j] << "\t" << gamma_wake_y_location[j] << endl;
     }
+    // End timer
+
+    cout << "The code was run for" << "\t" << ncycles << "cycles" << endl;
+    
+
+    return 0;
 }
