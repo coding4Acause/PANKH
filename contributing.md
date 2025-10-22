@@ -69,7 +69,6 @@ If you're submitting new code (e.g. motion modules, solvers, visualization):
 - If you're adding examples (e.g. sudden acceleration, pitch–plunge):
   - Place input files in `examples/your_case/`
   - Write a short README for the new example
-  - Make sure it runs with `./PANKH_solver input.json`
 
 ### Improving Documentation
 
@@ -183,3 +182,4 @@ You can check the [Issues](https://github.com/your_username/PANKH/issues) page t
 
 Thank you for helping make **PANKH** better!  
 — *The Maintainers*
+
