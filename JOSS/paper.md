@@ -71,7 +71,7 @@ Each airfoil panel has a control point (or collocation point) at its midpoint, w
 $$
 \left[(\nabla \Phi-{\boldsymbol V_{\text{body}}})_i\cdot \hat{\boldsymbol{n}}_i \right]_{t_k} = 0, \quad (1 \leq i \leq n-1)
 $$
-Here, $\Phi$ is the total velocity potential, composed of the perturbation and freestream components, i.e., $\Phi=\Phi_{\text{perturbation}}+\Phi_\infty$. The perturbation potential $\Phi_{\text{perturbation}}$ accounts for the influence of both bound and wake vortices, while $\Phi_{\infty}$ represents the freestream velocity potential. The same equation can be equivalently expressed explicity in terms of velocity as follows:
+Here, $\Phi$ is the total velocity potential, composed of the perturbation and freestream components, i.e., $\Phi=\Phi_{\text{perturbation}}+\Phi_\infty$. The perturbation potential $\Phi_{\text{perturbation}}$ accounts for the influence of both bound and wake vortices, while $\Phi_{\infty}$ represents the freestream velocity potential. The same equation can be equivalently expressed explicitly in terms of velocity as follows:
 $$
 \left[ \left( \boldsymbol{V}_{\text{bound}} + \boldsymbol{V}_{\text{wake}} + \underbrace{\left( \boldsymbol{V}_{\infty} - \overbrace{\left( \boldsymbol{V}_{0} + \boldsymbol{\Omega} \times \boldsymbol{r}_{i} \right)}^{\boldsymbol{V}_{\text{body}}} \right)}_{\boldsymbol{V}_{\text{kinematics}}} \right) \cdot \hat{\boldsymbol{n}}_{i} \right]_{t_k} = 0, \quad (1 \leq i \leq n-1)
 $$
@@ -93,7 +93,7 @@ The velocity contribution due to the wake, $V_{wake}$, comes from the most recen
 
 ### Other Physical Considerations
 
-#### Trailing Edge Condition(Kutta Condition)
+#### Trailing Edge Condition (Kutta Condition)
 Satisfying the boundary conditions alone does not yield a unique solution for the bound vortex strengths, $\gamma_j\,(1 \leq j \leq n)$. To obtain a unique solution, the flow must leave the airfoil's sharp trailing edge smoothly along the bisector line. This requirement is known as the Kutta Condition [@eldredge2019mathematical]. Mathematically, this condition is expressed as:
 $$
 \gamma_{\text{TE}}(t_k) = 0, \quad \text{where} \quad 
