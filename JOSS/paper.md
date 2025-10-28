@@ -116,7 +116,7 @@ Here, $\Gamma$ represents the total circulation in the flow domain enclosed by t
 
 This equation provides the $(n+1)^{\text{th}}$ constraint, required to solve for the n+1 unknowns in the system. 
 
-The resulting system, formulated as shown in **Figure 2**, is expressed as a single matrix equation and solved using the PartialPivLU decomposition solver available in the *Dense Linear Problems and Decompositions* module of the Eigen Library [[@eigenweb]](https://eigen.tuxfamily.org/index.php?title=Main_Page). In-depth insights into post-processing steps, encompassing the solution of the unsteady Bernoulli equation and computations of aerodynamic loads, are detailed in [@chowdhury2025fmfp].
+The resulting system, formulated as shown in **Figure 2**, is expressed as a single matrix equation and solved using the PartialPivLU decomposition solver available in the *Dense Linear Problems and Decompositions* module of the Eigen Library [@eigenweb]. In-depth insights into post-processing steps, encompassing the solution of the unsteady Bernoulli equation and computations of aerodynamic loads, are detailed in [@chowdhury2025fmfp].
 
 ![Equations formulated to determine the set of unknowns at a time instant $t_k$.](ax=b.jpg)
 
